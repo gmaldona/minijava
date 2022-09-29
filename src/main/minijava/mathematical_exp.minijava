@@ -1,0 +1,30 @@
+class Main {
+
+    public static void main(String[] args) {
+        System.out.println(new Math().math());
+
+    }
+
+}
+
+class Math {
+
+    public int math() {
+            int a;
+            int b;
+            int c;
+            int d;
+            int e;
+
+            a = 10;
+            b = 15;
+
+            c = a + b;
+            d = a * b;
+
+            e = (c) - (d);
+
+            return e;
+    }
+
+}

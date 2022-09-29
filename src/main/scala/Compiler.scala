@@ -3,7 +3,7 @@ import java.io.File
 import minijava.lang.parser.Parser
 import minijava.lang.error.{CompilerError, FileNotFound}
 
-object Main {
+object Compiler {
 
     def main(args: Array[String]): Unit = {
 

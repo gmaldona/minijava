@@ -10,9 +10,9 @@ class Testing {
     public int testing() {
 
         int a;
-        a = 1  + 1;
+        a = 1 + 1;
 
         return a;
-    }
+
 
 }

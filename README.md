@@ -1,4 +1,4 @@
-# <span> A compiler for Minijava <img src="https://img.icons8.com/color/48/000000/java-coffee-cup-logo--v1.png"/></span> 
+# <span> A compiler for MiniJava <img src="https://img.icons8.com/color/48/000000/java-coffee-cup-logo--v1.png"/></span> 
 Minijava is a subset of the Java language
 
 A few examples of the MiniJava language can be found <a href="https://www.cambridge.org/resources/052182060X/">here</a>. <br>

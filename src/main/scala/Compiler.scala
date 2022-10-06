@@ -1,6 +1,5 @@
 import java.io.File
-
-import minijava.lang.parser.Parser
+import minijava.lang.parser.{MiniJavaVisitorImpl, Parser}
 import minijava.lang.error.{CompilerError, FileNotFound}
 
 object Compiler {
@@ -16,8 +15,11 @@ object Compiler {
             FileNotFound(filename)
         }
 
-        val parseTree = Parser.parse(filename).toStringTree()
-        println(parseTree)
+        val parseTree = Parser.parse(filename)
+        val miniJavaVisitor = new MiniJavaVisitorImpl()
+        miniJavaVisitor.visit(parseTree)
+
+        println(parseTree.toStringTree())
     }
 
 }

@@ -13,19 +13,19 @@ sealed trait Operator extends ASTNode
 
 import ASTAliases.MethodParam
 
-case class Program(mainClass: MainKlass,
-                   klassDecls: List[KlassDecl]) extends ASTNode
+case class Program(mainClass: MainClass,
+                   ClassDecls: List[ClassDecl]) extends ASTNode
 
-case class MainKlass(klassName: Identifier,
+case class MainClass(ClassName: Identifier,
                      argName: Identifier,
                      statement: Statement) extends ASTNode
 
-case class KlassDecl(klassName: Identifier,
-                     superKlass: Option[Identifier],
+case class ClassDecl(ClassName: Identifier,
+                 superClass: Option[Identifier],
                      varDecls: List[VarDecl],
                      methodDecls: List[MethodDecl]) extends ASTNode
 
-case class VarDecl(varType: Type, varName: Identifier)
+case class VarDecl(varType: Type, varName: Identifier) extends ASTNode
 
 case class MethodDecl(methodType: Type,
                       methodName: Identifier,
@@ -73,7 +73,7 @@ case class ExprNot(expr: Expression,
 case class ExprParenthesis(expr: Expression,
                            expr2: Option[Expression2]) extends ASTNode
 
-case class ExprKlassMember(id: Identifier,
+case class ExprClassMember(id: Identifier,
                            memberParams: Option[List[Expression]],
                            expr2: Option[Expression2]) extends ASTNode
 
@@ -83,7 +83,7 @@ case class ExprArray(expression: Expression,
 case class NewIntArrayDecl(expr: Expression,
                            expr2: Option[Expression2]) extends ASTNode
 
-case class NewKlassDecl(klassName: Identifier,
+case class NewClassDecl(ClassName: Identifier,
                         expr2: Option[Expression2]) extends ASTNode
 
 case class ArrayLength(expr2: Option[Expression2]) extends ASTNode
@@ -94,7 +94,7 @@ case class IntLiteral(int: Int) extends ASTNode
 case class IntArray() extends Type
 case class Boolean() extends Type
 case class Int() extends Type
-case class KlassType() extends Type
+case class ClassType() extends Type
 
 case class And(expr: Expression,
                expr2: Option[Expression2]) extends Operator

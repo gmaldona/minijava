@@ -24,8 +24,4 @@ object Parser {
 
         miniJavaParser.program()
     }
-
-    def visit(parseTree: ParseTree): Unit = {
-
-    }
 }

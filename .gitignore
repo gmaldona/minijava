@@ -3,6 +3,7 @@ target/
 .bsp/
 env/
 build/
+project/target/
 
 # Mini Java files
 src/main/scala/antlr4/MiniJava.interp

@@ -12,7 +12,7 @@ classDeclaration: 'class' Identifier ('extends' Identifier)? '{' (varDeclaration
 
 varDeclaration: type Identifier ';';
 
-methodDeclaration: 	'public'type Identifier '(' (type Identifier (','type Identifier)* )? ')' '{' (varDeclaration)* (statement)* 'return' expression ';' '}';
+methodDeclaration: 	'public' type Identifier '(' (type Identifier (','type Identifier)* )? ')' '{' (varDeclaration)* (statement)* 'return' expression ';' '}';
 
 type:
         'int' '[' ']' # intArrayType
@@ -44,9 +44,9 @@ expression:
     ;
 
 expression2:
-        '.' Identifier '(' (expression(',' expression)*)? ')' expression2   # exprFunction
+        '.' Identifier '(' (expression(',' expression)*)? ')' expression2   # exprKlassMember
     |   '.'  'length' expression2                                           # exprLength
-    |   '[' expression ']' expression2                                      # expr
+    |   '[' expression ']' expression2                                      # exprArray
     |   ('&&' | '<' | '+' | '-' | '*') expression expression2               # exprOp
     |   /* epsilon */                                                       # epilson
     ;

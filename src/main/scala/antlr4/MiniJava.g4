@@ -1,5 +1,9 @@
 grammar MiniJava;
 
+@header {
+package antlr4;
+}
+
 program: mainClass (classDeclaration)* EOF;
 
 mainClass:  'class' Identifier '{' 'public' 'static' 'void' 'main' '(' 'String' '[' ']' Identifier ')' '{' statement '}' '}';
@@ -43,7 +47,7 @@ expression2:
         '.' Identifier '(' (expression(',' expression)*)? ')' expression2   # exprFunction
     |   '.'  'length' expression2                                           # exprLength
     |   '[' expression ']' expression2                                      # expr
-    |   ('&&' | '<' | '+' | '-' | '*') expression expression2               # expOp
+    |   ('&&' | '<' | '+' | '-' | '*') expression expression2               # exprOp
     |   /* epsilon */                                                       # epilson
     ;
 
@@ -51,8 +55,6 @@ IntegerLiteral:  [0-9]+ ;
 Identifier: [a-zA-Z_]+[a-zA-Z_0-9]*;
 WS : [ \t\r\n]+ -> skip ;
 COMMENT : '//' .+? ('\n'|EOF) -> skip ;
-
-
 
 
 

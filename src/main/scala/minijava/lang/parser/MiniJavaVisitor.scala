@@ -55,11 +55,11 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
 
     override def visitExprParenthesis(ctx: MiniJavaParser.ExprParenthesisContext): ASTNode = ???
 
-    override def visitExprFunction(ctx: MiniJavaParser.ExprFunctionContext): ASTNode = ???
+    override def visitExprKlassMember(ctx: MiniJavaParser.ExprKlassMemberContext): ASTNode = ???
 
     override def visitExprLength(ctx: MiniJavaParser.ExprLengthContext): ASTNode = ???
 
-    override def visitExpr(ctx: MiniJavaParser.ExprContext): ASTNode = ???
+    override def visitExprArray(ctx: MiniJavaParser.ExprArrayContext): ASTNode = ???
 
     override def visitExprOp(ctx: MiniJavaParser.ExprOpContext): ASTNode = ???
 

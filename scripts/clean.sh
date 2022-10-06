@@ -4,7 +4,6 @@ if [ ! -d src/ ]
 then
   printf "Please run the script from the root directory of the project.\n"
   exit 1
-fi;
+fi
 
-
-cd src/main/scala/antlr4 && rm -v !("MiniJava.g4")
+cd src/main/scala/antlr4 && rm *.java && rm *.tokens && rm *.interp

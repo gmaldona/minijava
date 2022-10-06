@@ -11,42 +11,40 @@ varDeclaration: type Identifier ';';
 methodDeclaration: 	'public'type Identifier '(' (type Identifier (','type Identifier)* )? ')' '{' (varDeclaration)* (statement)* 'return' expression ';' '}';
 
 type:
-        'int' '[' ']'
-    |   'boolean'
-    |   'int'
-    |   Identifier
+        'int' '[' ']' # intArrayType
+    |   'boolean'     # boolType
+    |   'int'         # intType
+    |   Identifier    # idType
     ;
 
-    /*  for (int i = 0; i < expression; i=i+8)    */
-
 statement:
-        '{' (statement)* '}'
-    |   'if' '(' expression ')' statement 'else' statement
-    |   'while' '(' expression ')' statement
-    |   'for' '(' 'int' Identifier '=' expression ';' expression ';' Identifier '=' expression ')' statement
-    |   'System.out.println' '(' expression ')' ';'
-    |   Identifier '=' expression ';'
-    |   Identifier  '[' expression ']' '=' expression ';'
+        '{' (statement)* '}'                                                                                    # statementBlock
+    |   'if' '(' expression ')' statement 'else' statement                                                      # ifStatement
+    |   'while' '(' expression ')' statement                                                                    # whileLoop
+    |   'for' '(' 'int' Identifier '=' expression ';' expression ';' Identifier '=' expression ')' statement    # forLoop
+    |   'System.out.println' '(' expression ')' ';'                                                             # printExpr
+    |   Identifier '=' expression ';'                                                                           # assign
+    |   Identifier  '[' expression ']' '=' expression ';'                                                       # arrayAssign
     ;
 
 expression:
-        IntegerLiteral expression2
-    |   'true' expression2
-    |   'false' expression2
-    |   Identifier expression2
-    |   'this' expression2
-    |   'new' 'int' '[' expression ']' expression2
-    |   'new' Identifier '(' ')' expression2
-    |   '!' expression expression2
-    |   '(' expression ')' expression2
+        IntegerLiteral expression2                      # exprNumber
+    |   'true' expression2                              # exprTrue
+    |   'false' expression2                             # exprFalse
+    |   Identifier expression2                          # exprId
+    |   'this' expression2                              # exprThis
+    |   'new' 'int' '[' expression ']' expression2      # newIntArray
+    |   'new' Identifier '(' ')' expression2            # newObject
+    |   '!' expression expression2                      # exprNot
+    |   '(' expression ')' expression2                  # exprParenthesis
     ;
 
 expression2:
-        '.' Identifier '(' (expression(',' expression)*)? ')' expression2
-    |   '.'  'length' expression2
-    |   '[' expression ']' expression2
-    |   ('&&' | '<' | '+' | '-' | '*') expression expression2
-    |   /* epsilon */
+        '.' Identifier '(' (expression(',' expression)*)? ')' expression2   # exprFunction
+    |   '.'  'length' expression2                                           # exprLength
+    |   '[' expression ']' expression2                                      # expr
+    |   ('&&' | '<' | '+' | '-' | '*') expression expression2               # expOp
+    |   /* epsilon */                                                       # epilson
     ;
 
 IntegerLiteral:  [0-9]+ ;

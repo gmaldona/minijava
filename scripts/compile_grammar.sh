@@ -9,7 +9,7 @@ fi;
 
 if [ ! -d env/ ]
 then
-  echo "----==== Downloading ANTLR4 Tools ====----\n"
+  echo "----==== Downloading ANTLR4 Tools ====----"
   ./scripts/build_venv.sh
 fi;
 

@@ -9,7 +9,7 @@ sealed trait Type extends ASTNode
 sealed trait Statement extends ASTNode
 sealed trait Expression extends ASTNode
 sealed trait Expression2 extends ASTNode
-sealed trait Operator extends ASTNode
+sealed trait Operator extends Expression2
 
 import ASTAliases.MethodParam
 
@@ -34,59 +34,61 @@ case class MethodDecl(methodType: Type,
                       statements: List[Statement],
                       returnExpr: Expression) extends ASTNode
 
-case class StatementBlock(statements: List[Statement]) extends ASTNode
+case class StatementBlock(statements: List[Statement]) extends Statement
 
 case class IfStatement(expr: Expression,
                        statement: Statement,
-                       elseStatement: Statement) extends ASTNode
+                       elseStatement: Statement) extends Statement
 
 case class WhileLoop(expr: Expression,
-                     statement: Statement) extends ASTNode
+                     statement: Statement) extends Statement
 
 case class ForLoop(var1Name: Identifier,
                    var1Assign: Expression,
-                   conditional: Statement,
+                   conditional: Expression,
                    var2Name: Identifier,
                    var2Assign: Expression,
-                   statement: Statement) extends ASTNode
+                   statement: Statement) extends Statement
 
-case class PrintStatement(expr: Expression) extends ASTNode
+case class PrintStatement(expr: Expression) extends Statement
 
-case class AssignStatement(expr: Expression) extends ASTNode
+case class AssignStatement(expr: Expression) extends Statement
 
 case class ArrayAssignStatement(indexExpr: Expression,
-                                expr: Expression) extends ASTNode
+                                expr: Expression) extends Statement
 
 case class ExprNumber(int: IntLiteral,
-                      expr2: Option[Expression2]) extends ASTNode
+                      expr2: Option[Expression2]) extends Expression
 
-case class ExprTrue(expr2: Option[Expression2]) extends ASTNode
+case class ExprTrue(expr2: Option[Expression2]) extends Expression
+
+case class ExprFalse(expr2: Option[Expression2]) extends Expression
 
 case class ExprId(id: Identifier,
-                  expr2: Option[Expression2]) extends ASTNode
+                  expr2: Option[Expression2]) extends Expression
 
-case class ExprThis(expr2: Option[Expression2]) extends ASTNode
+case class ExprThis(expr2: Option[Expression2]) extends Expression
 
 case class ExprNot(expr: Expression,
-                   expr2: Option[Expression2]) extends ASTNode
+                   expr2: Option[Expression2]) extends Expression
 
 case class ExprParenthesis(expr: Expression,
-                           expr2: Option[Expression2]) extends ASTNode
+                           expr2: Option[Expression2]) extends Expression
 
 case class ExprClassMember(id: Identifier,
                            memberParams: Option[List[Expression]],
-                           expr2: Option[Expression2]) extends ASTNode
+                           expr2: Option[Expression2]) extends Expression2
 
-case class ExprArray(expression: Expression,
-                     expr2: Option[Expression2]) extends ASTNode
+case class ExprArray(expr: Expression,
+                     expr2: Option[Expression2]) extends Expression2
 
 case class NewIntArrayDecl(expr: Expression,
-                           expr2: Option[Expression2]) extends ASTNode
+                           expr2: Option[Expression2]) extends Expression
 
 case class NewClassDecl(ClassName: Identifier,
-                        expr2: Option[Expression2]) extends ASTNode
+                        expr2: Option[Expression2]) extends Expression
 
-case class ArrayLength(expr2: Option[Expression2]) extends ASTNode
+case class ArrayLength(expr2: Option[Expression2]) extends Expression2
 
 case class Identifier(id: String) extends ASTNode
 case class IntLiteral(int: Int) extends ASTNode

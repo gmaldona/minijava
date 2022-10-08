@@ -1,9 +1,12 @@
 package minijava.lang.parser
 
 
-import antlr4.MiniJavaParser.{BoolTypeContext, IdTypeContext, IntArrayTypeContext, IntTypeContext}
+import antlr4.MiniJavaParser.{BoolTypeContext, IdTypeContext, IntArrayTypeContext, IntTypeContext, _ATN}
 import antlr4.{MiniJavaBaseVisitor, MiniJavaParser}
 import minijava.lang.ast._
+import minijava.lang.error.ParseTreeError
+
+import scala.language.postfixOps
 
 class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
 
@@ -50,15 +53,9 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
 
     override def visitVarDeclaration(ctx: MiniJavaParser.VarDeclarationContext): ASTNode = {
         val varName = visit(ctx.Identifier()).asInstanceOf[Identifier]
+        val varType = visit(ctx.`type`()).asInstanceOf[Type]
 
-        ctx.`type`() match {
-            case _: IdTypeContext       => VarDecl(visit(ctx.`type`()).asInstanceOf[ClassType], varName)
-            case _: IntArrayTypeContext => VarDecl(visit(ctx.`type`()).asInstanceOf[IntArray], varName)
-            case _: IntTypeContext      => VarDecl(visit(ctx.`type`()).asInstanceOf[Int], varName)
-            case _: BoolTypeContext     => VarDecl(visit(ctx.`type`()).asInstanceOf[Boolean], varName)
-
-            case _ => VarDecl(visit(ctx.`type`()).asInstanceOf[Type], varName)
-        }
+        VarDecl(varType, varName)
     }
 
     override def visitMethodDeclaration(ctx: MiniJavaParser.MethodDeclarationContext): ASTNode = ???
@@ -71,44 +68,178 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
 
     override def visitIdType(ctx: MiniJavaParser.IdTypeContext): ASTNode = ???
 
-    override def visitStatementBlock(ctx: MiniJavaParser.StatementBlockContext): ASTNode = ???
+    override def visitStatementBlock(ctx: MiniJavaParser.StatementBlockContext): ASTNode = {
+        var statementBlocks: List[Statement] = List()
+        val statementIter = ctx.statement().iterator()
+        while (statementIter.hasNext) {
+            statementBlocks = visit(statementIter.next()).asInstanceOf[Statement] :: statementBlocks
+        }
 
-    override def visitIfStatement(ctx: MiniJavaParser.IfStatementContext): ASTNode = ???
+        StatementBlock(statementBlocks)
+    }
 
-    override def visitWhileLoop(ctx: MiniJavaParser.WhileLoopContext): ASTNode = ???
+    override def visitIfStatement(ctx: MiniJavaParser.IfStatementContext): ASTNode = {
+        val expr          = visit(ctx.expression()).asInstanceOf[Expression]
+        val statement     = visit(ctx.statement().get(0)).asInstanceOf[Statement]
+        val elseStatement = visit(ctx.statement().get(1)).asInstanceOf[Statement]
 
-    override def visitForLoop(ctx: MiniJavaParser.ForLoopContext): ASTNode = ???
+        IfStatement(expr, statement, elseStatement)
+    }
 
-    override def visitPrintExpr(ctx: MiniJavaParser.PrintExprContext): ASTNode = ???
+    override def visitWhileLoop(ctx: MiniJavaParser.WhileLoopContext): ASTNode = {
+        val expr      = visit(ctx.expression()).asInstanceOf[Expression]
+        val statement = visit(ctx.statement()).asInstanceOf[Statement]
 
-    override def visitAssign(ctx: MiniJavaParser.AssignContext): ASTNode = ???
+        WhileLoop(expr, statement)
+    }
 
-    override def visitArrayAssign(ctx: MiniJavaParser.ArrayAssignContext): ASTNode = ???
+    override def visitForLoop(ctx: MiniJavaParser.ForLoopContext): ASTNode = {
 
-    override def visitExprNumber(ctx: MiniJavaParser.ExprNumberContext): ASTNode = ???
+        val var1Name    = visit(ctx.Identifier().get(0)).asInstanceOf[Identifier]
+        val var2Name    = visit(ctx.Identifier().get(1)).asInstanceOf[Identifier]
+        val var1Assign  = visit(ctx.expression().get(0)).asInstanceOf[Expression]
+        val var2Assign  = visit(ctx.expression().get(2)).asInstanceOf[Expression]
+        val conditional = visit(ctx.expression().get(1)).asInstanceOf[Expression]
+        val statement   = visit(ctx.statement()).asInstanceOf[Statement]
 
-    override def visitExprTrue(ctx: MiniJavaParser.ExprTrueContext): ASTNode = ???
+        ForLoop(var1Name, var1Assign, conditional, var2Name, var2Assign, statement)
+    }
 
-    override def visitExprFalse(ctx: MiniJavaParser.ExprFalseContext): ASTNode = ???
+    override def visitPrintExpr(ctx: MiniJavaParser.PrintExprContext): ASTNode = {
+         val expr = visit(ctx.expression()).asInstanceOf[Expression]
 
-    override def visitExprId(ctx: MiniJavaParser.ExprIdContext): ASTNode = ???
+        PrintStatement(expr)
+    }
 
-    override def visitExprThis(ctx: MiniJavaParser.ExprThisContext): ASTNode = ???
+    override def visitAssign(ctx: MiniJavaParser.AssignContext): ASTNode = {
+         val expr = visit(ctx.expression()).asInstanceOf[Expression]
 
-    override def visitNewIntArray(ctx: MiniJavaParser.NewIntArrayContext): ASTNode = ???
+        AssignStatement(expr)
+    }
 
-    override def visitNewObject(ctx: MiniJavaParser.NewObjectContext): ASTNode = ???
+    override def visitArrayAssign(ctx: MiniJavaParser.ArrayAssignContext): ASTNode = {
+        val indexExpr = visit(ctx.expression().get(0)).asInstanceOf[Expression]
+        val expr      = visit(ctx.expression().get(1)).asInstanceOf[Expression]
 
-    override def visitExprNot(ctx: MiniJavaParser.ExprNotContext): ASTNode = ???
+        ArrayAssignStatement(indexExpr, expr)
+    }
 
-    override def visitExprParenthesis(ctx: MiniJavaParser.ExprParenthesisContext): ASTNode = ???
+    override def visitExprNumber(ctx: MiniJavaParser.ExprNumberContext): ASTNode = {
+        val intLit = visit(ctx.IntegerLiteral()).asInstanceOf[IntLiteral]
+        val expr   = if (ctx.expression2().children != null)
+                        Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
 
-    override def visitExprKlassMember(ctx: MiniJavaParser.ExprKlassMemberContext): ASTNode = ???
+        ExprNumber(intLit, expr)
+    }
 
-    override def visitExprLength(ctx: MiniJavaParser.ExprLengthContext): ASTNode = ???
+    override def visitExprTrue(ctx: MiniJavaParser.ExprTrueContext): ASTNode = {
+        val expr   = if (ctx.expression2().children != null)
+                        Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
 
-    override def visitExprArray(ctx: MiniJavaParser.ExprArrayContext): ASTNode = ???
+        ExprTrue(expr)
+    }
 
-    override def visitExprOp(ctx: MiniJavaParser.ExprOpContext): ASTNode = ???
+    override def visitExprFalse(ctx: MiniJavaParser.ExprFalseContext): ASTNode = {
+        val expr   = if (ctx.expression2().children != null)
+            Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
+
+        ExprFalse(expr)
+    }
+
+    override def visitExprId(ctx: MiniJavaParser.ExprIdContext): ASTNode = {
+
+
+        val id = visit(ctx.Identifier()).asInstanceOf[Identifier]
+        val expr2 = if (ctx.expression2().children != null)
+            Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
+
+        ExprId(id, expr2)
+    }
+
+    override def visitExprThis(ctx: MiniJavaParser.ExprThisContext): ASTNode = {
+
+        val expr   = if (ctx.expression2().children != null)
+            Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
+
+        ExprThis(expr)
+    }
+
+    override def visitNewIntArray(ctx: MiniJavaParser.NewIntArrayContext): ASTNode = {
+        val index = visit(ctx.expression()).asInstanceOf[Expression]
+        val expr   = if (ctx.expression2().children != null)
+                        Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
+
+        NewIntArrayDecl(index, expr)
+    }
+
+    override def visitNewObject(ctx: MiniJavaParser.NewObjectContext): ASTNode = {
+        val className = visit(ctx.Identifier()).asInstanceOf[Identifier]
+        val expr   = if (ctx.expression2().children != null)
+                        Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
+
+        NewClassDecl(className, expr)
+    }
+
+    override def visitExprNot(ctx: MiniJavaParser.ExprNotContext): ASTNode = {
+        val expr = visit(ctx.expression()).asInstanceOf[Expression]
+        val expr2   = if (ctx.expression2().children != null)
+            Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
+
+        ExprNot(expr, expr2)
+    }
+
+    override def visitExprParenthesis(ctx: MiniJavaParser.ExprParenthesisContext): ASTNode = {
+        val expr = visit(ctx.expression()).asInstanceOf[Expression]
+        val expr2   = if (ctx.expression2().children != null)
+            Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
+
+        ExprParenthesis(expr, expr2)
+    }
+
+    override def visitExprClassMember(ctx: MiniJavaParser.ExprClassMemberContext): ASTNode = {
+        val className = visit(ctx.Identifier()).asInstanceOf[Identifier]
+        val expr      = if (ctx.expression2().children != null)
+                            Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
+
+        var memberParams: List[Expression] = List()
+        val memberParamIter = ctx.expression().iterator()
+        while (memberParamIter.hasNext) {
+            memberParams = visit(memberParamIter.next()).asInstanceOf[Expression] :: memberParams
+        }
+
+        ExprClassMember(className, Some(memberParams), expr)
+    }
+
+    override def visitExprLength(ctx: MiniJavaParser.ExprLengthContext): ASTNode = {
+        val expr = if (ctx.expression2().children != null)
+            Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
+
+        ArrayLength(expr)
+    }
+
+    override def visitExprArray(ctx: MiniJavaParser.ExprArrayContext): ASTNode = {
+        val expr = visit(ctx.expression()).asInstanceOf[Expression]
+        val expr2   = if (ctx.expression2().children != null)
+            Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
+
+        ExprArray(expr, expr2)
+    }
+
+    override def visitExprOp(ctx: MiniJavaParser.ExprOpContext): ASTNode = {
+
+        val expr = visit(ctx.expression()).asInstanceOf[Expression]
+        val expr2   = if (ctx.expression2().children != null)
+            Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
+
+        ctx.children.get(0).getText match {
+            case "&&" => And(expr, expr2)
+            case "<"  => LessThan(expr, expr2)
+            case "+"  => Addition(expr, expr2)
+            case "-"  => Subtraction(expr, expr2)
+            case "*"  => Multiplication(expr, expr2)
+
+            case _    => throw new Exception()
+        }
+    }
 
 }

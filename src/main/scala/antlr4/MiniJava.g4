@@ -44,14 +44,14 @@ expression:
     ;
 
 expression2:
-        '.' Identifier '(' (expression(',' expression)*)? ')' expression2   # exprKlassMember
+        '.' Identifier '(' (expression(',' expression)*)? ')' expression2   # exprClassMember
     |   '.'  'length' expression2                                           # exprLength
     |   '[' expression ']' expression2                                      # exprArray
     |   ('&&' | '<' | '+' | '-' | '*') expression expression2               # exprOp
     |   /* epsilon */                                                       # epilson
     ;
 
-IntegerLiteral:  [0-9]+ ;
+IntegerLiteral:  [0-9]+;
 Identifier: [a-zA-Z_]+[a-zA-Z_0-9]*;
 WS : [ \t\r\n]+ -> skip ;
 COMMENT : '//' .+? ('\n'|EOF) -> skip ;

@@ -17,9 +17,9 @@ object Compiler {
 
         val parseTree = Parser.parse(filename)
         val miniJavaVisitor = new MiniJavaVisitorImpl()
-        miniJavaVisitor.visit(parseTree)
+        val AST = miniJavaVisitor.visit(parseTree)
+        println(AST)
 
-        println(parseTree.toStringTree())
     }
 
 }

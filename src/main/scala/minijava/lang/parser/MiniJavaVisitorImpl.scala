@@ -1,10 +1,7 @@
 package minijava.lang.parser
 
-
-import antlr4.MiniJavaParser.{BoolTypeContext, IdTypeContext, IntArrayTypeContext, IntTypeContext, _ATN}
 import antlr4.{MiniJavaBaseVisitor, MiniJavaParser}
 import minijava.lang.ast._
-import minijava.lang.error.ParseTreeError
 
 import scala.language.postfixOps
 

@@ -51,7 +51,7 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
     }
 
     override def visitVarDeclaration(ctx: MiniJavaParser.VarDeclarationContext): ASTNode = {
-        val varName = visit(ctx.Identifier()).asInstanceOf[Identifier]
+        val varName = Identifier(ctx.Identifier().getText)
         val varType = visit(ctx.`type`()).asInstanceOf[Type]
 
         VarDecl(varType, varName)

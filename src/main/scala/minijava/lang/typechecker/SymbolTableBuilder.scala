@@ -1,14 +1,56 @@
 package minijava.lang.typechecker
 
 import minijava.lang.ast.{ASTNode, ClassDecl, ForLoop, IfStatement, MainClass, MethodDecl, Program, StatementBlock, WhileLoop}
+import minijava.lang.error.{IllegalMultipleInheritance, SymbolAlreadyDefined}
 import minijava.lang.parser.{SymbolTable, SymbolTableType}
 
 import scala.language.postfixOps
 
-class TypeChecker(AST: ASTNode) {
+class SymbolTableBuilder(AST: ASTNode) {
 
     val symbolTable = new SymbolTable("Program")
     buildSymbolTable(symbolTable, AST)
+    hasUniqueSymbols(symbolTable)
+
+    def hasUniqueSymbols(symbolTable: SymbolTable): Unit = {
+        var uniqueEntries = symbolTable.tableEntries
+            .filter( entry => entry._2 == SymbolTableType.Variable)
+            .map( entry => entry._1 )
+            .distinct
+
+        if (uniqueEntries.size != symbolTable.tableEntries.count(entry => entry._2 == SymbolTableType.Variable))
+            SymbolAlreadyDefined("Symbol has multiple definitions.")
+
+        uniqueEntries = symbolTable.tableEntries
+            .filter( entry =>
+                entry._2 == SymbolTableType.MainClass || entry._2 == SymbolTableType.Class
+            )
+            .map( entry => entry._1 )
+            .distinct
+
+        if (uniqueEntries.size != symbolTable.tableEntries.count(entry => entry._2 == SymbolTableType.Class || entry._2 == SymbolTableType.MainClass))
+            SymbolAlreadyDefined("Class has multiple definitions.")
+
+        uniqueEntries = symbolTable.tableEntries
+            .filter( entry => entry._2 == SymbolTableType.Method)
+            .map( entry => entry._1 )
+            .distinct
+
+        // TODO: FIX METHOD OVERRIDING
+        if (uniqueEntries.size != symbolTable.tableEntries.count(entry => entry._2 == SymbolTableType.Method))
+            SymbolAlreadyDefined("Method has multiple definitions.")
+
+        uniqueEntries = symbolTable.tableEntries
+            .filter( entry => entry._2 == SymbolTableType.SuperClass)
+            .map( entry => entry._1 )
+            .distinct
+
+        if (uniqueEntries.size != symbolTable.tableEntries.count(entry => entry._2 == SymbolTableType.SuperClass))
+            IllegalMultipleInheritance("Illegal Multiple Inheritance")
+
+        for (childTable <- symbolTable.childrenSymbolTables)
+            hasUniqueSymbols(childTable)
+    }
 
     def buildSymbolTable(symbolTable: SymbolTable, node: ASTNode): Unit = {
 
@@ -21,6 +63,7 @@ class TypeChecker(AST: ASTNode) {
             case _: WhileLoop      => TableEntry.whileLoop(symbolTable, node.asInstanceOf[WhileLoop])
             case _: ForLoop        => TableEntry.forLoop(symbolTable, node.asInstanceOf[ForLoop])
             case _: IfStatement    => TableEntry.ifStatement(symbolTable, node.asInstanceOf[IfStatement])
+            case _                 =>
         }
 
     }

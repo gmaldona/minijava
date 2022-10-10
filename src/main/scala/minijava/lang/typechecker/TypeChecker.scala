@@ -1,6 +1,6 @@
 package minijava.lang.typechecker
 
-import minijava.lang.ast.{ASTNode, ClassDecl, MainClass, MethodDecl, Program}
+import minijava.lang.ast.{ASTNode, ClassDecl, ForLoop, MainClass, MethodDecl, Program, StatementBlock, WhileLoop}
 import minijava.lang.parser.{SymbolTable, SymbolTableType}
 
 import scala.language.postfixOps
@@ -13,10 +13,13 @@ class TypeChecker(AST: ASTNode) {
     def buildSymbolTable(symbolTable: SymbolTable, node: ASTNode): Unit = {
 
         node match {
-            case _: Program    => TableEntry.program(symbolTable, node.asInstanceOf[Program])
-            case _: MainClass  => TableEntry.mainClass(symbolTable, node.asInstanceOf[MainClass])
-            case _: ClassDecl  => TableEntry.classDecl(symbolTable, node.asInstanceOf[ClassDecl])
-            case _: MethodDecl => TableEntry.methodDecl()
+            case _: Program        => TableEntry.program(symbolTable, node.asInstanceOf[Program])
+            case _: MainClass      => TableEntry.mainClass(symbolTable, node.asInstanceOf[MainClass])
+            case _: ClassDecl      => TableEntry.classDecl(symbolTable, node.asInstanceOf[ClassDecl])
+            case _: MethodDecl     => TableEntry.methodDecl(symbolTable, node.asInstanceOf[MethodDecl])
+            case _: StatementBlock => TableEntry.statementBlock(symbolTable, node.asInstanceOf[StatementBlock])
+            case _: WhileLoop      => TableEntry.whileLoop(symbolTable, node.asInstanceOf[WhileLoop])
+            case _: ForLoop        => TableEntry.forLoop()
         }
 
     }
@@ -113,12 +116,45 @@ class TypeChecker(AST: ASTNode) {
                 buildSymbolTable(symbolTable, methodDecl)
         }
 
-        def VarDecl(): Unit = ???
-        def methodDecl(): Unit = ???
-        def statementBlock(): Unit = ???
+        def methodDecl(parentSymbolTable: SymbolTable, node: MethodDecl): Unit = {
+            val symbolTable = new SymbolTable(parentSymbolTable.getTag + " - " + node.methodName.id)
+            parentSymbolTable.addChildSymbolTable(symbolTable)
+            symbolTable.setParentSymbolTable(parentSymbolTable)
+
+            val paramsSymbols = node.methodParams.map( paramDecl => (
+                paramDecl._2.id,
+                SymbolTableType.Variable,
+                node,
+                paramDecl._2
+            ))
+
+            for (paramSymbol <- paramsSymbols) {
+                symbolTable.addEntry(paramSymbol)
+            }
+
+            val varSymbols = node.varDecls.map( varDecl => (
+                varDecl.varName.id,
+                SymbolTableType.Variable,
+                node,
+                varDecl
+            ))
+
+            for (varSymbol <- varSymbols) {
+                symbolTable.addEntry(varSymbol)
+            }
+
+            for (statement <- node.statements)
+                buildSymbolTable(symbolTable, statement)
+        }
+
+        def statementBlock(parentSymbolTable: SymbolTable, node: StatementBlock): Unit = {
+
+        }
+
+
         def ifStatement(): Unit = ???
-        def whiteLoop(): Unit = ???
-        def forLoop(): Unit = ???
+        def whileLoop(parentSymbolTable: SymbolTable, node: WhileLoop): Unit = ???
+        def forLoop(parentSymbolTable: SymbolTable, node: ForLoop): Unit = ???
         def assign(): Unit = ???
         def arrayAssign(): Unit = ???
     }

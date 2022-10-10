@@ -1,7 +1,7 @@
 import java.io.File
 import minijava.lang.parser.{MiniJavaVisitorImpl, Parser}
-import minijava.lang.typechecker.SymbolTableBuilder
 import minijava.lang.error.{CompilerError, FileNotFound}
+import minijava.lang.parser.symboltable.SymbolTableBuilder
 
 object Compiler {
 

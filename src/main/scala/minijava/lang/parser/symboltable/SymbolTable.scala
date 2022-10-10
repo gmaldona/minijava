@@ -1,4 +1,4 @@
-package minijava.lang.parser
+package minijava.lang.parser.symboltable
 
 import minijava.lang.ast.{ASTNode, Scope}
 

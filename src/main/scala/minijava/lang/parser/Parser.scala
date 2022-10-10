@@ -5,7 +5,6 @@ import org.antlr.v4.runtime.misc.ParseCancellationException
 
 import antlr4.{MiniJavaLexer, MiniJavaParser}
 import minijava.lang.error.ParseErrorInstance
-import org.antlr.v4.runtime.tree.ParseTree
 
 object Parser {
 

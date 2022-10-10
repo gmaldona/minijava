@@ -1,8 +1,7 @@
-package minijava.lang.typechecker
+package minijava.lang.parser.symboltable
 
-import minijava.lang.ast.{ASTNode, ClassDecl, ForLoop, IfStatement, MainClass, MethodDecl, Program, StatementBlock, WhileLoop}
+import minijava.lang.ast._
 import minijava.lang.error.{IllegalMultipleInheritance, SymbolAlreadyDefined}
-import minijava.lang.parser.{SymbolTable, SymbolTableType}
 
 import scala.language.postfixOps
 

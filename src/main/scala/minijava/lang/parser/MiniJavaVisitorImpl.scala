@@ -127,8 +127,8 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
 
     override def visitForLoop(ctx: MiniJavaParser.ForLoopContext): ASTNode = {
 
-        val var1Name    = visit(ctx.Identifier().get(0)).asInstanceOf[Identifier]
-        val var2Name    = visit(ctx.Identifier().get(1)).asInstanceOf[Identifier]
+        val var1Name    = Identifier(ctx.Identifier().get(0).getText)
+        val var2Name    = Identifier(ctx.Identifier().get(1).getText)
         val var1Assign  = visit(ctx.expression().get(0)).asInstanceOf[Expression]
         val var2Assign  = visit(ctx.expression().get(2)).asInstanceOf[Expression]
         val conditional = visit(ctx.expression().get(1)).asInstanceOf[Expression]

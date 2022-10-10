@@ -19,7 +19,7 @@ class TypeChecker(AST: ASTNode) {
             case _: MethodDecl     => TableEntry.methodDecl(symbolTable, node.asInstanceOf[MethodDecl])
             case _: StatementBlock => TableEntry.statementBlock(symbolTable, node.asInstanceOf[StatementBlock])
             case _: WhileLoop      => TableEntry.whileLoop(symbolTable, node.asInstanceOf[WhileLoop])
-            case _: ForLoop        => TableEntry.forLoop()
+            case _: ForLoop        => TableEntry.forLoop(symbolTable, node.asInstanceOf[ForLoop])
         }
 
     }
@@ -143,18 +143,40 @@ class TypeChecker(AST: ASTNode) {
                 symbolTable.addEntry(varSymbol)
             }
 
-            for (statement <- node.statements)
+            println(symbolTable)
+
+            for (statement <- node.statements) {
                 buildSymbolTable(symbolTable, statement)
+            }
         }
 
         def statementBlock(parentSymbolTable: SymbolTable, node: StatementBlock): Unit = {
 
         }
 
+        def whileLoop(parentSymbolTable: SymbolTable, node: WhileLoop): Unit = ???
+
+        def forLoop(parentSymbolTable: SymbolTable, node: ForLoop): Unit = {
+            val symbolTable = new SymbolTable(parentSymbolTable.getTag + " - For Loop")
+            parentSymbolTable.addChildSymbolTable(symbolTable)
+            symbolTable.setParentSymbolTable(parentSymbolTable)
+
+            val varDecl = (
+                node.var1Name.id,
+                SymbolTableType.Variable,
+                node,
+                node
+            )
+
+            symbolTable.addEntry(varDecl)
+
+            println(symbolTable)
+
+            buildSymbolTable(symbolTable, node.statement)
+        }
+
 
         def ifStatement(): Unit = ???
-        def whileLoop(parentSymbolTable: SymbolTable, node: WhileLoop): Unit = ???
-        def forLoop(parentSymbolTable: SymbolTable, node: ForLoop): Unit = ???
         def assign(): Unit = ???
         def arrayAssign(): Unit = ???
     }

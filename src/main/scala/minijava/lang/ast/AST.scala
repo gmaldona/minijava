@@ -10,20 +10,21 @@ sealed trait Statement extends ASTNode
 sealed trait Expression extends ASTNode
 sealed trait Expression2 extends ASTNode
 sealed trait Operator extends Expression2
+sealed trait Scope
 
 import ASTAliases.MethodParam
 
 case class Program(mainClass: MainClass,
-                   ClassDecls: List[ClassDecl]) extends ASTNode
+                   ClassDecls: List[ClassDecl]) extends ASTNode with Scope
 
 case class MainClass(ClassName: Identifier,
                      argName: Identifier,
-                     statement: Statement) extends ASTNode
+                     statement: Statement) extends ASTNode with Scope
 
 case class ClassDecl(ClassName: Identifier,
                  superClass: Option[Identifier],
                      varDecls: List[VarDecl],
-                     methodDecls: List[MethodDecl]) extends ASTNode
+                     methodDecls: List[MethodDecl]) extends ASTNode with Scope
 
 case class VarDecl(varType: Type, varName: Identifier) extends ASTNode
 
@@ -32,23 +33,23 @@ case class MethodDecl(methodType: Type,
                       methodParams: List[MethodParam],
                       varDecls: List[VarDecl],
                       statements: List[Statement],
-                      returnExpr: Expression) extends ASTNode
+                      returnExpr: Expression) extends ASTNode with Scope
 
-case class StatementBlock(statements: List[Statement]) extends Statement
+case class StatementBlock(statements: List[Statement]) extends Statement with Scope
 
 case class IfStatement(expr: Expression,
                        statement: Statement,
-                       elseStatement: Statement) extends Statement
+                       elseStatement: Statement) extends Statement with Scope
 
 case class WhileLoop(expr: Expression,
-                     statement: Statement) extends Statement
+                     statement: Statement) extends Statement with Scope
 
 case class ForLoop(var1Name: Identifier,
                    var1Assign: Expression,
                    conditional: Expression,
                    var2Name: Identifier,
                    var2Assign: Expression,
-                   statement: Statement) extends Statement
+                   statement: Statement) extends Statement with Scope
 
 case class PrintStatement(expr: Expression) extends Statement
 
@@ -95,7 +96,7 @@ case class IntLiteral(int: Int) extends ASTNode
 
 case class IntArray() extends Type
 case class Boolean() extends Type
-case class Int() extends Type
+case class int() extends Type
 case class ClassType() extends Type
 
 case class And(expr: Expression,

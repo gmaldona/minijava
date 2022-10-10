@@ -1,7 +1,9 @@
 package minijava.lang.parser
 
 import antlr4.{MiniJavaBaseVisitor, MiniJavaParser}
+import minijava.lang.ast.ASTAliases.MethodParam
 import minijava.lang.ast._
+import minijava.lang.error.TypeError
 
 import scala.language.postfixOps
 
@@ -20,17 +22,17 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
     }
 
     override def visitMainClass(ctx: MiniJavaParser.MainClassContext): ASTNode = {
-        val className = visit(ctx.Identifier().get(0)).asInstanceOf[Identifier]
-        val argName   = visit(ctx.Identifier().get(1)).asInstanceOf[Identifier]
+        val className = Identifier(ctx.Identifier().get(0).getText)
+        val argName   = Identifier(ctx.Identifier().get(1).getText)
         val statement = visit(ctx.statement()).asInstanceOf[Statement]
 
         MainClass(className, argName, statement)
     }
 
     override def visitClassDeclaration(ctx: MiniJavaParser.ClassDeclarationContext): ASTNode = {
-        val className  = visit(ctx.Identifier().get(0)).asInstanceOf[Identifier]
+        val className  = Identifier(ctx.Identifier().get(0).getText)
         val superClass = if (ctx.Identifier().size() > 1)
-                             Some(visit(ctx.Identifier().get(1))
+                             Some(Identifier(ctx.Identifier().get(1).getText)
                                  .asInstanceOf[Identifier]) else None
 
         var varDecls: List[VarDecl] = List()
@@ -55,13 +57,46 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
         VarDecl(varType, varName)
     }
 
-    override def visitMethodDeclaration(ctx: MiniJavaParser.MethodDeclarationContext): ASTNode = ???
+    override def visitMethodDeclaration(ctx: MiniJavaParser.MethodDeclarationContext): ASTNode = {
+        val methodType = visit(ctx.`type`().get(0)).asInstanceOf[Type]
+        val methodName = Identifier(ctx.Identifier().get(0).getText)
+
+        var parameters: List[MethodParam] = List()
+        val typeIter = ctx.`type`().iterator()
+        val idIter   = ctx.Identifier().iterator()
+        typeIter.next()
+        idIter.next()
+
+        while (typeIter.hasNext) {
+            parameters = (
+                visit(typeIter.next()).asInstanceOf[Type], Identifier(idIter.next().getText)
+            ) :: parameters
+        }
+
+        var varDecls: List[VarDecl] = List()
+        val varIter = ctx.varDeclaration().iterator()
+        while (varIter.hasNext) {
+            varDecls = visit(varIter.next()).asInstanceOf[VarDecl] :: varDecls
+        }
+
+        var statements: List[Statement] = List()
+        val statementIter = ctx.statement().iterator()
+        while (statementIter.hasNext) {
+            statements = visit(statementIter.next()).asInstanceOf[Statement] :: statements
+        }
+
+        val returnExpr = visit(ctx.expression()).asInstanceOf[Expression]
+
+        MethodDecl(methodType, methodName, parameters, varDecls, statements, returnExpr)
+    }
 
     override def visitIntArrayType(ctx: MiniJavaParser.IntArrayTypeContext): ASTNode = ???
 
     override def visitBoolType(ctx: MiniJavaParser.BoolTypeContext): ASTNode = ???
 
-    override def visitIntType(ctx: MiniJavaParser.IntTypeContext): ASTNode = ???
+    override def visitIntType(ctx: MiniJavaParser.IntTypeContext): ASTNode = {
+        int()
+    }
 
     override def visitIdType(ctx: MiniJavaParser.IdTypeContext): ASTNode = ???
 

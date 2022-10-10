@@ -1,5 +1,6 @@
 import java.io.File
 import minijava.lang.parser.{MiniJavaVisitorImpl, Parser}
+import minijava.lang.typechecker.TypeChecker
 import minijava.lang.error.{CompilerError, FileNotFound}
 
 object Compiler {
@@ -20,6 +21,7 @@ object Compiler {
         val AST = miniJavaVisitor.visit(parseTree)
         println(AST)
 
+        val typechecker = new TypeChecker(AST)
     }
 
 }

@@ -25,15 +25,16 @@ class TypeChecker(AST: ASTNode) {
         def program(symbolTable: SymbolTable, node: Program): Unit = {
 
             val mainClass = (
-                node.mainClass.ClassName,
+                node.mainClass.ClassName.id,
                 SymbolTableType.MainClass,
                 node,
                 node.mainClass
             )
+            symbolTable.addEntry(mainClass)
 
             for (classDecl <- node.ClassDecls) {
                 val classDeclEntry = (
-                    classDecl.ClassName,
+                    classDecl.ClassName.id,
                     SymbolTableType.Class,
                     node,
                     classDecl
@@ -53,13 +54,6 @@ class TypeChecker(AST: ASTNode) {
             parentSymbolTable.addChildSymbolTable(symbolTable)
             symbolTable.setParentSymbolTable(parentSymbolTable)
 
-            val classSymbol = (
-                node.ClassName.id,
-                SymbolTableType.MainClass,
-                parentSymbolTable.scope,
-                node
-            )
-
             val argsSymbol = (
                 node.argName.id,
                 SymbolTableType.Variable,
@@ -67,7 +61,7 @@ class TypeChecker(AST: ASTNode) {
                 node.argName
             )
 
-            symbolTable.addEntries(List(classSymbol, argsSymbol))
+            symbolTable.addEntry(argsSymbol)
 
             println(symbolTable)
         }
@@ -77,17 +71,10 @@ class TypeChecker(AST: ASTNode) {
             parentSymbolTable.addChildSymbolTable(symbolTable)
             symbolTable.setParentSymbolTable(parentSymbolTable)
 
-            val classSymbol = (
-                node.ClassName.id,
-                SymbolTableType.Class,
-                parentSymbolTable.scope,
-                node
-            )
-
             val varSymbols = node.varDecls.map( varDecl => (
                 varDecl.varName.id,
                 SymbolTableType.Variable,
-                node,
+                parentSymbolTable.scope,
                 varDecl
             ))
 
@@ -115,9 +102,9 @@ class TypeChecker(AST: ASTNode) {
                         node,
                         n
                     )
-                    symbolTable.addEntries(List(classSymbol, superClassSymbol))
+                    symbolTable.addEntry(superClassSymbol)
                 }
-                case None => symbolTable.addEntry(classSymbol)
+                case None =>
             }
 
             println(symbolTable)

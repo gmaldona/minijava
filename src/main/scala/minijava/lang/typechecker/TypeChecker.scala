@@ -1,6 +1,6 @@
 package minijava.lang.typechecker
 
-import minijava.lang.ast.{ASTNode, ClassDecl, ForLoop, MainClass, MethodDecl, Program, StatementBlock, WhileLoop}
+import minijava.lang.ast.{ASTNode, ClassDecl, ForLoop, IfStatement, MainClass, MethodDecl, Program, StatementBlock, WhileLoop}
 import minijava.lang.parser.{SymbolTable, SymbolTableType}
 
 import scala.language.postfixOps
@@ -20,6 +20,7 @@ class TypeChecker(AST: ASTNode) {
             case _: StatementBlock => TableEntry.statementBlock(symbolTable, node.asInstanceOf[StatementBlock])
             case _: WhileLoop      => TableEntry.whileLoop(symbolTable, node.asInstanceOf[WhileLoop])
             case _: ForLoop        => TableEntry.forLoop(symbolTable, node.asInstanceOf[ForLoop])
+            case _: IfStatement    => TableEntry.ifStatement(symbolTable, node.asInstanceOf[IfStatement])
         }
 
     }
@@ -151,10 +152,21 @@ class TypeChecker(AST: ASTNode) {
         }
 
         def statementBlock(parentSymbolTable: SymbolTable, node: StatementBlock): Unit = {
+            val symbolTable = new SymbolTable(parentSymbolTable.getTag + " - Statement Block")
+            parentSymbolTable.addChildSymbolTable(symbolTable)
+            symbolTable.setParentSymbolTable(parentSymbolTable)
 
+            for (statement <- node.statements)
+                buildSymbolTable(symbolTable, statement)
         }
 
-        def whileLoop(parentSymbolTable: SymbolTable, node: WhileLoop): Unit = ???
+        def whileLoop(parentSymbolTable: SymbolTable, node: WhileLoop): Unit = {
+            val symbolTable = new SymbolTable(parentSymbolTable.getTag + " - While Loop")
+            parentSymbolTable.addChildSymbolTable(symbolTable)
+            symbolTable.setParentSymbolTable(parentSymbolTable)
+
+            buildSymbolTable(symbolTable, node.statement)
+        }
 
         def forLoop(parentSymbolTable: SymbolTable, node: ForLoop): Unit = {
             val symbolTable = new SymbolTable(parentSymbolTable.getTag + " - For Loop")
@@ -176,7 +188,14 @@ class TypeChecker(AST: ASTNode) {
         }
 
 
-        def ifStatement(): Unit = ???
+        def ifStatement(parentSymbolTable: SymbolTable, node: IfStatement): Unit = {
+            val symbolTable = new SymbolTable(parentSymbolTable.getTag + " - If Statement")
+            parentSymbolTable.addChildSymbolTable(symbolTable)
+            symbolTable.setParentSymbolTable(parentSymbolTable)
+
+            buildSymbolTable(symbolTable, node.statement)
+            buildSymbolTable(symbolTable, node.elseStatement)
+        }
         def assign(): Unit = ???
         def arrayAssign(): Unit = ???
     }

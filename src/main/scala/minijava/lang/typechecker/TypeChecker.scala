@@ -5,7 +5,7 @@ import minijava.lang.parser.symboltable.SymbolTable
 
 class TypeChecker(AST: ASTNode, symbolTable: SymbolTable) {
 
-    typeCheck
+    _traverseAST(AST)
 
     def _traverseAST(node: ASTNode): Unit = {
         node match {

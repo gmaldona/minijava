@@ -7,9 +7,9 @@ class Main {
 }
 
 class Main2 {
-    boolean a;
+    Mainth t;
     public int start() {
-       a = 4;
+       t = this;
        return 0;
     }
 }

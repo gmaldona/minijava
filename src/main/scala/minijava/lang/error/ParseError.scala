@@ -17,3 +17,5 @@ case class TypeMismatchError(msg: String) extends ParseError(msg)
 case class UseBeforeDeclaration(msg: String) extends ParseError(msg)
 
 case class TypeNotSupported(msg: String) extends ParseError(msg)
+
+case class KeywordThisUsedInMainError(msg: String = "Keyword this was used in Main class.") extends ParseError(msg)

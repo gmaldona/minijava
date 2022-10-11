@@ -115,7 +115,9 @@ case class boolean() extends Type {
 case class int() extends Type {
     override def toString: String = "int"
 }
-case class ClassType() extends Type
+case class ClassType(identifier: Identifier) extends Type {
+    override def toString: String = identifier.id
+}
 
 case class And(_expr: Expression,
                _expr2: Option[Expression2]) extends Operator(_expr, _expr2)

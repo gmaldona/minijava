@@ -1,6 +1,6 @@
 package minijava.lang.parser.symboltable
 
-import minijava.lang.ast.{ASTNode, Scope}
+import minijava.lang.ast._
 
 /*
         -----------------------------------------
@@ -62,6 +62,19 @@ class SymbolTable(tag: String) {
                 entry._3,
                 entry._4
             )
+    }
+
+    def containsSymbol(symbol: String): Boolean = {
+        tableEntries
+            .filter( entry => entry._1.equals(symbol))
+            .nonEmpty
+    }
+
+    def getTableEntry(symbol: String, tableType: SymbolTableType): tableEntry = {
+        tableEntries
+            .filter( entry => entry._1.equals(symbol))
+            .filter( entry => entry._2 == tableType)
+            .head
     }
 
     def scope: Scope = tableEntries.head._3

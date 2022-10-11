@@ -90,15 +90,21 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
         MethodDecl(methodType, methodName, parameters, varDecls, statements, returnExpr)
     }
 
-    override def visitIntArrayType(ctx: MiniJavaParser.IntArrayTypeContext): ASTNode = ???
+    override def visitIntArrayType(ctx: MiniJavaParser.IntArrayTypeContext): ASTNode = {
+        IntArray()
+    }
 
-    override def visitBoolType(ctx: MiniJavaParser.BoolTypeContext): ASTNode = ???
+    override def visitBoolType(ctx: MiniJavaParser.BoolTypeContext): ASTNode = {
+        boolean()
+    }
 
     override def visitIntType(ctx: MiniJavaParser.IntTypeContext): ASTNode = {
         int()
     }
 
-    override def visitIdType(ctx: MiniJavaParser.IdTypeContext): ASTNode = ???
+    override def visitIdType(ctx: MiniJavaParser.IdTypeContext): ASTNode = {
+        ClassType()
+    }
 
     override def visitStatementBlock(ctx: MiniJavaParser.StatementBlockContext): ASTNode = {
         var statementBlocks: List[Statement] = List()
@@ -144,9 +150,10 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
     }
 
     override def visitAssign(ctx: MiniJavaParser.AssignContext): ASTNode = {
+        val varName = Identifier(ctx.Identifier().getText)
          val expr = visit(ctx.expression()).asInstanceOf[Expression]
 
-        AssignStatement(expr)
+        AssignStatement(varName, expr)
     }
 
     override def visitArrayAssign(ctx: MiniJavaParser.ArrayAssignContext): ASTNode = {

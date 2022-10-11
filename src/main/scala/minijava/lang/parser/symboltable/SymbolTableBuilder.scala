@@ -2,6 +2,7 @@ package minijava.lang.parser.symboltable
 
 import minijava.lang.ast._
 import minijava.lang.error.{IllegalMultipleInheritance, SymbolAlreadyDefined}
+import minijava.lang.typechecker.TypeChecker
 
 import scala.language.postfixOps
 
@@ -62,6 +63,9 @@ class SymbolTableBuilder(AST: ASTNode) {
             case _: WhileLoop      => TableEntry.whileLoop(symbolTable, node.asInstanceOf[WhileLoop])
             case _: ForLoop        => TableEntry.forLoop(symbolTable, node.asInstanceOf[ForLoop])
             case _: IfStatement    => TableEntry.ifStatement(symbolTable, node.asInstanceOf[IfStatement])
+
+            case _: AssignStatement => TypeChecker.typeCheck(symbolTable, node.asInstanceOf[AssignStatement])
+
             case _                 =>
         }
 

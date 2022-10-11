@@ -9,7 +9,12 @@ sealed trait Type extends ASTNode
 sealed trait Statement extends ASTNode
 sealed trait Expression extends ASTNode
 sealed trait Expression2 extends ASTNode
-sealed trait Operator extends Expression2
+
+abstract class Operator(_expr: Expression,
+                        _expr2: Option[Expression2]) extends Expression2 {
+    val expr: Expression = _expr
+    val expr2: Option[Expression2] = _expr2
+}
 sealed trait Scope
 
 import ASTAliases.MethodParam
@@ -53,7 +58,8 @@ case class ForLoop(var1Name: Identifier,
 
 case class PrintStatement(expr: Expression) extends Statement
 
-case class AssignStatement(expr: Expression) extends Statement
+case class AssignStatement(varName: Identifier,
+                           expr: Expression) extends Statement
 
 case class ArrayAssignStatement(indexExpr: Expression,
                                 expr: Expression) extends Statement
@@ -61,9 +67,13 @@ case class ArrayAssignStatement(indexExpr: Expression,
 case class ExprNumber(int: IntLiteral,
                       expr2: Option[Expression2]) extends Expression
 
-case class ExprTrue(expr2: Option[Expression2]) extends Expression
+abstract class ExprBoolean(_expr2: Option[Expression2]) extends Expression {
+    val expr2: Option[Expression2] = _expr2
+}
 
-case class ExprFalse(expr2: Option[Expression2]) extends Expression
+case class ExprTrue(_expr2: Option[Expression2]) extends ExprBoolean(_expr2)
+
+case class ExprFalse(_expr2: Option[Expression2]) extends ExprBoolean(_expr2)
 
 case class ExprId(id: Identifier,
                   expr2: Option[Expression2]) extends Expression
@@ -91,28 +101,36 @@ case class NewClassDecl(ClassName: Identifier,
 
 case class ArrayLength(expr2: Option[Expression2]) extends Expression2
 
-case class Identifier(id: String) extends ASTNode
+case class Identifier(id: String) extends ASTNode {
+    override def toString: String = id
+}
 case class IntLiteral(int: Int) extends ASTNode
 
-case class IntArray() extends Type
-case class Boolean() extends Type
-case class int() extends Type
+case class IntArray() extends Type {
+    override def toString: String = "int[]"
+}
+case class boolean() extends Type {
+    override def toString: String = "boolean"
+}
+case class int() extends Type {
+    override def toString: String = "int"
+}
 case class ClassType() extends Type
 
-case class And(expr: Expression,
-               expr2: Option[Expression2]) extends Operator
+case class And(_expr: Expression,
+               _expr2: Option[Expression2]) extends Operator(_expr, _expr2)
 
-case class Addition(expr: Expression,
-                    expr2: Option[Expression2]) extends Operator
+case class Addition(_expr: Expression,
+                    _expr2: Option[Expression2]) extends Operator(_expr, _expr2)
 
-case class Subtraction(expr: Expression,
-                       expr2: Option[Expression2]) extends Operator
+case class Subtraction(_expr: Expression,
+                       _expr2: Option[Expression2]) extends Operator(_expr, _expr2)
 
-case class Multiplication(expr: Expression,
-                          expr2: Option[Expression2]) extends Operator
+case class Multiplication(_expr: Expression,
+                          _expr2: Option[Expression2]) extends Operator(_expr, _expr2)
 
-case class LessThan(expr: Expression,
-                    expr2: Option[Expression2]) extends Operator
+case class LessThan(_expr: Expression,
+                    _expr2: Option[Expression2]) extends Operator(_expr, _expr2)
 
 
 

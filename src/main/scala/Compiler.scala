@@ -2,6 +2,7 @@ import java.io.File
 import minijava.lang.parser.{MiniJavaVisitorImpl, Parser}
 import minijava.lang.error.{CompilerError, FileNotFound}
 import minijava.lang.parser.symboltable.SymbolTableBuilder
+import minijava.lang.typechecker.TypeChecker
 
 object Compiler {
 
@@ -21,7 +22,8 @@ object Compiler {
         val AST = miniJavaVisitor.visit(parseTree)
         println(AST)
 
-        val typechecker = new SymbolTableBuilder(AST)
+        val symbolTable = new SymbolTableBuilder(AST).symbolTable
+//        TypeChecker.typeCheck(symbolTable, AST)
     }
 
 }

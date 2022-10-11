@@ -11,9 +11,17 @@ object TypeChecker {
 
     def typeCheck(symbolTable: SymbolTable, node: ASTNode): Unit = {
         node match {
-            case n: AssignStatement => assignStatementTypeCheck(symbolTable, node.asInstanceOf[AssignStatement])
-
+            case _: AssignStatement => assignStatementTypeCheck(symbolTable, node.asInstanceOf[AssignStatement])
+            case _: MethodDecl => returnStatementTypeCheck(symbolTable, node.asInstanceOf[MethodDecl])
         }
+    }
+
+    def methodParamTypeCheck(): Unit = ???
+
+    def returnStatementTypeCheck(symbolTable: SymbolTable, node: MethodDecl): Unit = {
+        val returnType: Type = expressionTypeCheck(symbolTable, node.returnExpr)
+        if (node.methodType != returnType)
+            TypeMismatchError("Got a return type of " + returnType + " when expecting a return type of " + node.methodType)
     }
 
     def assignStatementTypeCheck(symbolTable: SymbolTable, node: AssignStatement): Unit = {
@@ -22,7 +30,7 @@ object TypeChecker {
                 case Some(table) =>
                     assignStatementTypeCheck(table, node)
                     return
-                case None        => UseBeforeDeclaration("Symbol " + node.varName.id + " used before declared.")
+                case None => UseBeforeDeclaration("Symbol " + node.varName.id + " used before declared.")
             }
         }
 
@@ -34,8 +42,6 @@ object TypeChecker {
     }
 
     def expressionTypeCheck(symbolTable: SymbolTable, node: Expression): Type = {
-        println(node)
-
         node match {
             case n: ExprNumber =>
                 n.expr2 match {
@@ -129,88 +135,5 @@ object TypeChecker {
                 }
         }
     }
-}
 
-//import scala.language.postfixOps
-//
-//class TypeChecker(symbolTable: SymbolTable, AST: ASTNode) {
-//
-//    _traverseAST(AST)
-//    var currentSymbolTable: SymbolTable = symbolTable
-//
-//    def _traverseAST(node: ASTNode): Unit = {
-//        node match {
-//            case _: Program =>
-//                val programNode = node.asInstanceOf[Program]
-//                _traverseAST(programNode.mainClass)
-//                for (classDecl <- programNode.ClassDecls) _traverseAST(classDecl)
-//            case _: MainClass =>
-//                val mainClassNode = node.asInstanceOf[MainClass]
-//                _traverseAST(mainClassNode.statement)
-//            case _: ClassDecl =>
-//                val classNode = node.asInstanceOf[ClassDecl]
-//                for (methodDecl <- classNode.methodDecls) _traverseAST(methodDecl)
-//            case _: MethodDecl =>
-//                val methodNode = node.asInstanceOf[MethodDecl]
-//                //methodReturnTypeCheck(methodNode)
-//                //methodParameterTypeCheck(methodNode)
-//                for (statement <- methodNode.statements) _traverseAST(statement)
-//            case _: StatementBlock =>
-//                val statementNode = node.asInstanceOf[StatementBlock]
-//                for (statement <- statementNode.statements) _traverseAST(statement)
-//            case _: IfStatement =>
-//                val ifStatementNode = node.asInstanceOf[IfStatement]
-//                ifStatementBooleanTypeCheck(ifStatementNode)
-//                _traverseAST(ifStatementNode.statement)
-//                _traverseAST(ifStatementNode.elseStatement)
-//            case _: WhileLoop =>
-//                val whileLoopNode = node.asInstanceOf[WhileLoop]
-//                whileLoopExpressionTypeCheck(whileLoopNode)
-//                _traverseAST(whileLoopNode.statement)
-//            case _: ForLoop =>
-//                val forLoopNode = node.asInstanceOf[ForLoop]
-//                forLoopExpressionTypeCheck(forLoopNode)
-//                _traverseAST(forLoopNode.statement)
-//            case _: AssignStatement =>
-//                val assignNode = node.asInstanceOf[AssignStatement]
-//                varAssignTypeCheck(assignNode)
-//            case _: ArrayAssignStatement =>
-//                val arrayAssignNode = node.asInstanceOf[ArrayAssignStatement]
-//                arrayAssignTypeCheck(arrayAssignNode)
-//            case _: ExprArray =>
-//                val exprArrayNode = node.asInstanceOf[ExprArray]
-//                arrayIndexTypeCheck(exprArrayNode)
-//            case _: PrintStatement =>
-//                val printStatementNode = node.asInstanceOf[PrintStatement]
-//        }
-//    }
-//
-//    def expressionTypeCheck(node: Expression): Type = {
-//        node match {
-//            case n: ExprNumber =>
-//                n.expr2 match {
-//                    case Some(expr) =>
-//                        val expr2Type = expression2TypeCheck(expr)
-//                        if (expr2Type != int())
-//                            TypeMismatchError("Mismatch type of " + int() + " and " + expr2Type)
-//                        int()
-//                    case None => int()
-//                }
-//        }
-//    }
-//
-//
-//
-//    def expression2TypeCheck(node: Expression2): Type = ???
-//    def methodReturnTypeCheck(node: MethodDecl): Unit = ???
-//    def varAssignTypeCheck(node: AssignStatement): Unit = {
-//
-//    }
-//    def ifStatementBooleanTypeCheck(node: IfStatement): Unit = ???
-//    def whileLoopExpressionTypeCheck(node: WhileLoop): Unit = ???
-//    def forLoopExpressionTypeCheck(node: ForLoop): Unit = ???
-//    def methodParameterTypeCheck(node: MethodDecl): Unit = ???
-//    def arrayAssignTypeCheck(node: ArrayAssignStatement): Unit = ???
-//    def arrayIndexTypeCheck(node: ExprArray): Unit = ???
-//    def newIntArrayDeclTypeCheck(node: NewIntArrayDecl): Unit = ???
-//}
+}

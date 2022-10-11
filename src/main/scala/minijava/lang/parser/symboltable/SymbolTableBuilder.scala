@@ -58,15 +58,16 @@ class SymbolTableBuilder(AST: ASTNode) {
             case _: Program        => TableEntry.program(symbolTable, node.asInstanceOf[Program])
             case _: MainClass      => TableEntry.mainClass(symbolTable, node.asInstanceOf[MainClass])
             case _: ClassDecl      => TableEntry.classDecl(symbolTable, node.asInstanceOf[ClassDecl])
-            case _: MethodDecl     => TableEntry.methodDecl(symbolTable, node.asInstanceOf[MethodDecl])
+            case _: MethodDecl     =>
+                TableEntry.methodDecl(symbolTable, node.asInstanceOf[MethodDecl])
+                TypeChecker.typeCheck(symbolTable, node)
             case _: StatementBlock => TableEntry.statementBlock(symbolTable, node.asInstanceOf[StatementBlock])
             case _: WhileLoop      => TableEntry.whileLoop(symbolTable, node.asInstanceOf[WhileLoop])
             case _: ForLoop        => TableEntry.forLoop(symbolTable, node.asInstanceOf[ForLoop])
             case _: IfStatement    => TableEntry.ifStatement(symbolTable, node.asInstanceOf[IfStatement])
 
-            case _: AssignStatement => TypeChecker.typeCheck(symbolTable, node.asInstanceOf[AssignStatement])
-
-            case _                 =>
+            case _: AssignStatement => TypeChecker.typeCheck(symbolTable, node)
+            case _                  =>
         }
 
     }

@@ -9,6 +9,7 @@ object TypeChecker {
     def typeCheck(symbolTable: SymbolTable, node: ASTNode): Unit = {
         node match {
             case n: AssignStatement => assignStatementTypeCheck(symbolTable, node.asInstanceOf[AssignStatement])
+
         }
     }
 
@@ -52,6 +53,15 @@ object TypeChecker {
                     case None => boolean()
                 }
             case n: ExprId => ???
+            case n: NewIntArrayDecl =>
+                n.expr2 match {
+                    case Some(expr) => ???
+                    case None => IntArray()
+                }
+            case n: ExprThis => ??? // look at the current scope
+            case n: NewClassDecl => ???
+            case n: ExprNot => ???
+            case n: ExprParenthesis => ???
         }
 
     }

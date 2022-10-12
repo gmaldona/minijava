@@ -70,6 +70,12 @@ class SymbolTable(tag: String) {
             .nonEmpty
     }
 
+    def getTableEntries(symbol: String, tableType: SymbolTableType): List[tableEntry] = {
+        tableEntries
+            .filter( entry => entry._1.equals(symbol))
+            .filter( entry => entry._2 == tableType)
+    }
+
     def getTableEntry(symbol: String, tableType: SymbolTableType): tableEntry = {
         tableEntries
             .filter( entry => entry._1.equals(symbol))

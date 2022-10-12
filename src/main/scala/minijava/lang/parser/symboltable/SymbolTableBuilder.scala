@@ -37,7 +37,7 @@ class SymbolTableBuilder(AST: ASTNode) {
             .map( entry => entry._1 )
             .distinct
 
-        // TODO: FIX METHOD OVERRIDING
+        // If methods are not unique, check for method overloading
         if (uniqueEntries.size != symbolTable.tableEntries.count(entry => entry._2 == SymbolTableType.Method)) {
             val uniqueMethodNames = symbolTable.tableEntries
                 .filter( entry => entry._2 == SymbolTableType.Method)
@@ -110,8 +110,6 @@ class SymbolTableBuilder(AST: ASTNode) {
                 symbolTable.addEntry(classDeclEntry)
             }
 
-            println(symbolTable)
-
             buildSymbolTable(symbolTable, node.mainClass)
             for (classDecl <- node.ClassDecls)
                 buildSymbolTable(symbolTable, classDecl)
@@ -131,7 +129,6 @@ class SymbolTableBuilder(AST: ASTNode) {
 
             symbolTable.addEntry(argsSymbol)
 
-            println(symbolTable)
         }
 
         def classDecl(parentSymbolTable: SymbolTable, node: ClassDecl): Unit = {
@@ -175,8 +172,6 @@ class SymbolTableBuilder(AST: ASTNode) {
                 case None =>
             }
 
-            println(symbolTable)
-
             for (methodDecl <- node.methodDecls)
                 buildSymbolTable(symbolTable, methodDecl)
         }
@@ -207,8 +202,6 @@ class SymbolTableBuilder(AST: ASTNode) {
             for (varSymbol <- varSymbols) {
                 symbolTable.addEntry(varSymbol)
             }
-
-            println(symbolTable)
 
             for (statement <- node.statements) {
                 buildSymbolTable(symbolTable, statement)
@@ -245,8 +238,6 @@ class SymbolTableBuilder(AST: ASTNode) {
             )
 
             symbolTable.addEntry(varDecl)
-
-            println(symbolTable)
 
             buildSymbolTable(symbolTable, node.statement)
         }

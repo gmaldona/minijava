@@ -110,14 +110,21 @@ object TypeChecker {
                 if (sizeExpr != int())
                     TypeMismatchError("Expecting type " + int() + " for size of array. Got type " + sizeExpr)
                 n.expr2 match {
-                    case Some(expr) => ???
+                    case Some(expr) =>
+                      expr match {
+                          case _: ArrayLength =>
+                              expression2TypeCheck(symbolTable, expr)
+                          case _ =>
+                              OperationNotSupported("Operation not supported for declaring new int[]")
+                              int()
+                      }
                     case None => IntArray()
                 }
             case n: ExprThis =>
                 var thisType: Option[Scope] = None
+                var currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
                 breakable {
                     // TODO: THIS WILL BREAK, NOT TRAVERSING UP THE TREE
-                    val currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
                     while (true) {
                         currentSymbolTable match {
                             case Some(table) =>
@@ -125,14 +132,16 @@ object TypeChecker {
                                     case scopeType: ClassDecl =>
                                         thisType = Some(scopeType)
                                         break
-                                    case _ => KeywordThisUsedInMainError()
+                                    case _ =>
+                                        currentSymbolTable = table.parentSymbolTable
                                 }
                             case None => KeywordThisUsedInMainError()
                         }
                     }
                 }
                 n.expr2 match {
-                    case Some(expr) => ???
+                    case Some(expr) =>
+                        expression2TypeCheck(symbolTable, expr)
                     case None => ClassType(thisType.get.asInstanceOf[ClassDecl].ClassName)
 
                 }
@@ -205,21 +214,48 @@ object TypeChecker {
                         int()
                     case None => int()
                 }
-            case n: ExprClassMember => ???
-//                var currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
-//
-//                breakable {
-//                    while (true) {
-//                        currentSymbolTable match {
-//                            case Some(table) =>
-//                                if (table.containsSymbol(n.id.id))
-//                                    break
-//                                currentSymbolTable = table.parentSymbolTable
-//                            case None => UseBeforeDeclaration("Method " + n.id.id + " was called before defined.")
-//                        }
-//                    }
-//                }
+            case n: ExprClassMember =>
+                var currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
 
+                breakable {
+                    while (true) {
+                        currentSymbolTable match {
+                            case Some(table) =>
+                                if (table.containsSymbol(n.id.id))
+                                    break
+                                currentSymbolTable = table.parentSymbolTable
+                            case None => ??? // if not exists in traversing up, then check for method overriding
+                        }
+                    }
+                }
+
+                n.memberParams match {
+                    case Some(_) =>
+                    case None => UseBeforeDeclaration("")
+                }
+
+                println
+
+                if (n.memberParams.get.isEmpty) {
+                    val hasMethodWithNoParams = currentSymbolTable.get.getTableEntries(n.id.id, SymbolTableType.Method)
+                        .filter(entry => entry._4.asInstanceOf[MethodDecl].methodParams.isEmpty)
+                    println(currentSymbolTable.get)
+                    if (hasMethodWithNoParams.isEmpty) {
+                        UseBeforeDeclaration("Method " + n.id.id + " was used before declared")
+                    }
+
+                    return hasMethodWithNoParams.head._4.asInstanceOf[MethodDecl].methodType
+                }
+
+                val exprTypes: List[Type] = n.memberParams.get.map( param => expressionTypeCheck(currentSymbolTable.get, param))
+
+                val method = currentSymbolTable.get.getTableEntries(n.id.id, SymbolTableType.Method)
+                    .filter(entry => entry._4.asInstanceOf[MethodDecl].methodParams.map(param => param._1) == exprTypes)
+
+                if (method.isEmpty)
+                    UseBeforeDeclaration("Method " + n.id.id + " was used before declared")
+
+                method.head._4.asInstanceOf[MethodDecl].methodType
         }
     }
 

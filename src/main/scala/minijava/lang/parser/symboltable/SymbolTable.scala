@@ -70,6 +70,13 @@ class SymbolTable(tag: String) {
             .nonEmpty
     }
 
+    def containsClass(symbol: String): Boolean = {
+        tableEntries
+            .filter( entry => entry._1.equals(symbol))
+            .filter( entry => entry._2 == SymbolTableType.Class)
+            .nonEmpty
+    }
+
     def getTableEntries(symbol: String, tableType: SymbolTableType): List[tableEntry] = {
         tableEntries
             .filter( entry => entry._1.equals(symbol))

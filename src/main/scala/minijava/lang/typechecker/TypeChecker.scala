@@ -1,7 +1,7 @@
 package minijava.lang.typechecker
 
 import minijava.lang.ast._
-import minijava.lang.error.{KeywordThisUsedInMainError, OperationNotSupported, TypeMismatchError, TypeNotSupported, UseBeforeDeclaration}
+import minijava.lang.error.{IllegalInheritance, KeywordThisUsedInMainError, OperationNotSupported, TypeMismatchError, TypeNotSupported, UseBeforeDeclaration}
 import minijava.lang.parser.symboltable.{SymbolTable, SymbolTableType}
 
 import scala.language.postfixOps
@@ -11,12 +11,23 @@ object TypeChecker {
 
     def typeCheck(symbolTable: SymbolTable, node: ASTNode): Unit = {
         node match {
+            case _: ClassDecl => illegalInheritanceCheck(symbolTable, node.asInstanceOf[ClassDecl])
             case _: AssignStatement => assignStatementTypeCheck(symbolTable, node.asInstanceOf[AssignStatement])
             case _: MethodDecl => returnStatementTypeCheck(symbolTable, node.asInstanceOf[MethodDecl])
         }
     }
 
-    def methodParamTypeCheck(): Unit = ???
+    def illegalInheritanceCheck(symbolTable: SymbolTable, node: ClassDecl): Unit = {
+        node.superClass match {
+            case Some(superClass) =>
+                if (! symbolTable.containsClass(superClass.id))
+                    IllegalInheritance("Class " + superClass.id + " does not exist.")
+                if (node.ClassName.id.equals(superClass.id))
+                    IllegalInheritance("Class " + node.ClassName + " cannot extend itself.")
+
+            case None =>
+        }
+    }
 
     def returnStatementTypeCheck(symbolTable: SymbolTable, node: MethodDecl): Unit = {
         val returnType: Type = expressionTypeCheck(symbolTable, node.returnExpr)
@@ -147,7 +158,8 @@ object TypeChecker {
                 }
             case n: NewClassDecl =>
                 n.expr2 match {
-                    case Some(expr) => ???
+                    case Some(expr) =>
+                        expression2TypeCheck(symbolTable, expr)
                     case None => ClassType(n.ClassName)
                 }
             case n: ExprNot =>

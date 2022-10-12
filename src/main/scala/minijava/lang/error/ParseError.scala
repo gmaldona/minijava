@@ -10,7 +10,7 @@ case class TypeError(msg: String) extends ParseError(msg)
 
 case class SymbolAlreadyDefined(msg: String) extends ParseError(msg)
 
-case class IllegalMultipleInheritance(msg: String) extends ParseError(msg)
+case class IllegalInheritance(msg: String) extends ParseError(msg)
 
 case class TypeMismatchError(msg: String) extends ParseError(msg)
 

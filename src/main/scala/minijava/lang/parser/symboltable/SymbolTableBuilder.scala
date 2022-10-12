@@ -2,7 +2,7 @@ package minijava.lang.parser.symboltable
 
 import minijava.lang.ast.ASTAliases.MethodParam
 import minijava.lang.ast._
-import minijava.lang.error.{IllegalMultipleInheritance, SymbolAlreadyDefined}
+import minijava.lang.error.{IllegalInheritance, SymbolAlreadyDefined}
 import minijava.lang.typechecker.TypeChecker
 
 import scala.language.postfixOps
@@ -63,7 +63,7 @@ class SymbolTableBuilder(AST: ASTNode) {
             .distinct
 
         if (uniqueEntries.size != symbolTable.tableEntries.count(entry => entry._2 == SymbolTableType.SuperClass))
-            IllegalMultipleInheritance("Illegal Multiple Inheritance")
+            IllegalInheritance("Illegal Inheritance")
 
         for (childTable <- symbolTable.childrenSymbolTables)
             hasUniqueSymbols(childTable)
@@ -73,7 +73,9 @@ class SymbolTableBuilder(AST: ASTNode) {
         node match {
             case _: Program        => TableEntry.program(symbolTable, node.asInstanceOf[Program])
             case _: MainClass      => TableEntry.mainClass(symbolTable, node.asInstanceOf[MainClass])
-            case _: ClassDecl      => TableEntry.classDecl(symbolTable, node.asInstanceOf[ClassDecl])
+            case _: ClassDecl      =>
+                TableEntry.classDecl(symbolTable, node.asInstanceOf[ClassDecl])
+                TypeChecker.typeCheck(symbolTable, node.asInstanceOf[ClassDecl])
             case _: MethodDecl     =>
                 TableEntry.methodDecl(symbolTable, node.asInstanceOf[MethodDecl])
                 TypeChecker.typeCheck(symbolTable.childrenSymbolTables.last, node)

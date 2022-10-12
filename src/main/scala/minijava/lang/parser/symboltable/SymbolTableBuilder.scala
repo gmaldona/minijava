@@ -125,7 +125,7 @@ class SymbolTableBuilder(AST: ASTNode) {
             val varSymbols = node.varDecls.map( varDecl => (
                 varDecl.varName.id,
                 SymbolTableType.Variable,
-                parentSymbolTable.scope,
+                node,
                 varDecl
             ))
 

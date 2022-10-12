@@ -27,13 +27,10 @@ object TypeChecker {
     def assignStatementTypeCheck(symbolTable: SymbolTable, node: AssignStatement): Unit = {
         var currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
         breakable {
-            println("_______________________________")
             while (true) {
-//                println(symbolTable)
                 currentSymbolTable match {
                     case Some(table) =>
                         if (table.containsSymbol(node.varName.id)) {
-                            println(table)
                             break
                         }
                         currentSymbolTable = symbolTable.parentSymbolTable
@@ -41,14 +38,6 @@ object TypeChecker {
                 }
             }
         }
-//        if (! symbolTable.containsSymbol(node.varName.id)) {
-//            symbolTable.parentSymbolTable match {
-//                case Some(table) =>
-//                    assignStatementTypeCheck(table, node)
-//                    return
-//                case None =>
-//            }
-//        }
 
         val tableEntry = currentSymbolTable.get.getTableEntry(node.varName.id, SymbolTableType.Variable)
         val varDeclType = tableEntry._4.asInstanceOf[VarDecl].varType
@@ -110,6 +99,7 @@ object TypeChecker {
                                 if (idType.get != IntArray())
                                     TypeMismatchError(".length expects a symbol of type " + IntArray())
                                 int()
+                            case _: ExprArray => expression2TypeCheck(symbolTable, expr)
                             case _ => ???
                         }
                     case None => idType.get
@@ -168,11 +158,34 @@ object TypeChecker {
                         exprType
                     case None => exprType
                 }
+            case n: ExprArray =>
+                val exprType = expressionTypeCheck(symbolTable, n.expr)
+                if (exprType != int())
+                    TypeMismatchError("Array index expecting type " + int() + ". Got type " + exprType)
+                n.expr2 match {
+                    case Some(expr) => ???
+                    case None => int()
+                }
             case n: ArrayLength =>
                 n.expr2 match {
                     case Some(expr) => ???
                     case None => int()
                 }
+            case n: ExprClassMember => ???
+//                var currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
+//
+//                breakable {
+//                    while (true) {
+//                        currentSymbolTable match {
+//                            case Some(table) =>
+//                                if (table.containsSymbol(n.id.id))
+//                                    break
+//                                currentSymbolTable = table.parentSymbolTable
+//                            case None => UseBeforeDeclaration("Method " + n.id.id + " was called before defined.")
+//                        }
+//                    }
+//                }
+
         }
     }
 

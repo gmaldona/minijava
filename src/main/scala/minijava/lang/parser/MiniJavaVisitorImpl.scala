@@ -83,7 +83,7 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
         while (statementIter.hasNext) {
             statements = visit(statementIter.next()).asInstanceOf[Statement] :: statements
         }
-        println(ctx.expression())
+
         val returnExpr = visit(ctx.expression()).asInstanceOf[Expression]
 
         MethodDecl(methodType, methodName, parameters, varDecls, statements, returnExpr)

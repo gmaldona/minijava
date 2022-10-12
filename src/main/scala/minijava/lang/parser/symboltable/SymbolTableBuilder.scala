@@ -1,5 +1,6 @@
 package minijava.lang.parser.symboltable
 
+import minijava.lang.ast.ASTAliases.MethodParam
 import minijava.lang.ast._
 import minijava.lang.error.{IllegalMultipleInheritance, SymbolAlreadyDefined}
 import minijava.lang.typechecker.TypeChecker
@@ -37,8 +38,24 @@ class SymbolTableBuilder(AST: ASTNode) {
             .distinct
 
         // TODO: FIX METHOD OVERRIDING
-        if (uniqueEntries.size != symbolTable.tableEntries.count(entry => entry._2 == SymbolTableType.Method))
-            SymbolAlreadyDefined("Method has multiple definitions.")
+        if (uniqueEntries.size != symbolTable.tableEntries.count(entry => entry._2 == SymbolTableType.Method)) {
+            val uniqueMethodNames = symbolTable.tableEntries
+                .filter( entry => entry._2 == SymbolTableType.Method)
+                .map( entry => entry._1)
+
+            for (methodName <- uniqueMethodNames) {
+                val methodOverloads = symbolTable.getTableEntries(methodName, SymbolTableType.Method)
+                val uniqueMethods: List[List[Type]] = methodOverloads
+                    .map(entry => entry._4.asInstanceOf[MethodDecl].methodParams)
+                    .map(entry => entry.map(param => param._1))
+                    .distinct
+
+                if (uniqueMethods.size != methodOverloads.size)
+                    SymbolAlreadyDefined("Method has multiple definitions.")
+
+            }
+
+        }
 
         uniqueEntries = symbolTable.tableEntries
             .filter( entry => entry._2 == SymbolTableType.SuperClass)

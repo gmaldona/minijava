@@ -25,16 +25,32 @@ object TypeChecker {
     }
 
     def assignStatementTypeCheck(symbolTable: SymbolTable, node: AssignStatement): Unit = {
-        if (! symbolTable.containsSymbol(node.varName.id)) {
-            symbolTable.parentSymbolTable match {
-                case Some(table) =>
-                    assignStatementTypeCheck(table, node)
-                    return
-                case None => UseBeforeDeclaration("Symbol " + node.varName.id + " used before declared.")
+        var currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
+        breakable {
+            println("_______________________________")
+            while (true) {
+//                println(symbolTable)
+                currentSymbolTable match {
+                    case Some(table) =>
+                        if (table.containsSymbol(node.varName.id)) {
+                            println(table)
+                            break
+                        }
+                        currentSymbolTable = symbolTable.parentSymbolTable
+                    case None => UseBeforeDeclaration("Symbol " + node.varName.id + " used before declared.")
+                }
             }
         }
+//        if (! symbolTable.containsSymbol(node.varName.id)) {
+//            symbolTable.parentSymbolTable match {
+//                case Some(table) =>
+//                    assignStatementTypeCheck(table, node)
+//                    return
+//                case None =>
+//            }
+//        }
 
-        val tableEntry = symbolTable.getTableEntry(node.varName.id, SymbolTableType.Variable)
+        val tableEntry = currentSymbolTable.get.getTableEntry(node.varName.id, SymbolTableType.Variable)
         val varDeclType = tableEntry._4.asInstanceOf[VarDecl].varType
         val exprType = expressionTypeCheck(symbolTable, node.expr)
         if (varDeclType != exprType)
@@ -62,23 +78,41 @@ object TypeChecker {
                     case None => boolean()
                 }
             case n: ExprId =>
-                val currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
+                var currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
                 breakable {
                     while (true) {
                         currentSymbolTable match {
                             case Some(table) =>
                                 if (table.containsSymbol(n.id.id))
                                     break
+                                currentSymbolTable = table.parentSymbolTable
                             case None => UseBeforeDeclaration("Symbol " + n.id.id + " was used before declared.")
                         }
                     }
                 }
-                val idType = currentSymbolTable.get
+
+                val node = currentSymbolTable.get
                     .getTableEntry(n.id.id, SymbolTableType.Variable)
-                    ._4.asInstanceOf[VarDecl].varType
+                    ._4
+
+                var idType: Option[Type] = None
+                node match {
+                    case n: VarDecl => idType = Some(n.varType)
+                    case n: Identifier => idType = Some(symbolTable
+                        .scope.asInstanceOf[MethodDecl]
+                        .methodParams.filter( param => param._2 == n).head._1)
+                }
+
                 n.expr2 match {
-                    case Some(expr) => ???
-                    case None => idType
+                    case Some(expr) =>
+                        expr match {
+                            case _: ArrayLength =>
+                                if (idType.get != IntArray())
+                                    TypeMismatchError(".length expects a symbol of type " + IntArray())
+                                int()
+                            case _ => ???
+                        }
+                    case None => idType.get
                 }
             case n: NewIntArrayDecl =>
                 val sizeExpr = expressionTypeCheck(symbolTable, n.expr)
@@ -91,6 +125,7 @@ object TypeChecker {
             case n: ExprThis =>
                 var thisType: Option[Scope] = None
                 breakable {
+                    // TODO: THIS WILL BREAK, NOT TRAVERSING UP THE TREE
                     val currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
                     while (true) {
                         currentSymbolTable match {
@@ -132,6 +167,11 @@ object TypeChecker {
                             TypeMismatchError("Mismatch type of " + exprType + " with " + expr2Type)
                         exprType
                     case None => exprType
+                }
+            case n: ArrayLength =>
+                n.expr2 match {
+                    case Some(expr) => ???
+                    case None => int()
                 }
         }
     }

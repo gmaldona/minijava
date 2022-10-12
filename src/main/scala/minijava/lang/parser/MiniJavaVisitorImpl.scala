@@ -32,8 +32,7 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
     override def visitClassDeclaration(ctx: MiniJavaParser.ClassDeclarationContext): ASTNode = {
         val className  = Identifier(ctx.Identifier().get(0).getText)
         val superClass = if (ctx.Identifier().size() > 1)
-                             Some(Identifier(ctx.Identifier().get(1).getText)
-                                 .asInstanceOf[Identifier]) else None
+                             Some(Identifier(ctx.Identifier().get(1).getText)) else None
 
         var varDecls: List[VarDecl] = List()
         val varIter = ctx.varDeclaration().iterator()
@@ -188,7 +187,7 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
     override def visitExprId(ctx: MiniJavaParser.ExprIdContext): ASTNode = {
 
 
-        val id = visit(ctx.Identifier()).asInstanceOf[Identifier]
+        val id = Identifier(ctx.Identifier().getText)
         val expr2 = if (ctx.expression2().children != null)
             Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
 
@@ -212,7 +211,7 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
     }
 
     override def visitNewObject(ctx: MiniJavaParser.NewObjectContext): ASTNode = {
-        val className = visit(ctx.Identifier()).asInstanceOf[Identifier]
+        val className = Identifier(ctx.Identifier().getText)
         val expr   = if (ctx.expression2().children != null)
                         Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
 
@@ -236,7 +235,7 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
     }
 
     override def visitExprClassMember(ctx: MiniJavaParser.ExprClassMemberContext): ASTNode = {
-        val className = visit(ctx.Identifier()).asInstanceOf[Identifier]
+        val className = Identifier(ctx.Identifier().getText)
         val expr      = if (ctx.expression2().children != null)
                             Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
 

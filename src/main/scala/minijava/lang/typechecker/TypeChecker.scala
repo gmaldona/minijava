@@ -141,7 +141,15 @@ object TypeChecker {
                     case Some(expr) => ???
                     case None => ClassType(n.ClassName)
                 }
-            case n: ExprNot => ???
+            case n: ExprNot => {
+                val exprType = expressionTypeCheck(symbolTable, n.expr)
+                if (exprType != boolean())
+                    TypeMismatchError("Not (!) operator expecting type " + boolean() + ". Got type " + exprType)
+                n.expr2 match {
+                    case Some(expr) => ???
+                    case None => boolean()
+                }
+            }
             case n: ExprParenthesis => ???
         }
 

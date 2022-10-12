@@ -98,6 +98,7 @@ object TypeChecker {
                             case _: ArrayLength =>
                                 if (idType.get != IntArray())
                                     TypeMismatchError(".length expects a symbol of type " + IntArray())
+                                    expression2TypeCheck(symbolTable, expr)
                                 int()
                             case _: ExprArray => expression2TypeCheck(symbolTable, expr)
                             case _ => ???
@@ -163,12 +164,20 @@ object TypeChecker {
                 if (exprType != int())
                     TypeMismatchError("Array index expecting type " + int() + ". Got type " + exprType)
                 n.expr2 match {
-                    case Some(expr) => ???
+                    case Some(expr) =>
+                        val expr2Type = expression2TypeCheck(symbolTable, expr)
+                        if (expr2Type != expressionTypeCheck(symbolTable, n.expr))
+                            TypeMismatchError("Mismatch type of " + exprType + " with " + expr2Type)
+                        exprType
                     case None => int()
                 }
             case n: ArrayLength =>
                 n.expr2 match {
-                    case Some(expr) => ???
+                    case Some(expr) =>
+                        val expr2Type = expression2TypeCheck(symbolTable, expr)
+                        if (expr2Type != int())
+                            TypeMismatchError("Mismatch type of " + int() + " with " + expr2Type)
+                        int()
                     case None => int()
                 }
             case n: ExprClassMember => ???

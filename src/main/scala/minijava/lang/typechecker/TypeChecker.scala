@@ -1,7 +1,7 @@
 package minijava.lang.typechecker
 
 import minijava.lang.ast._
-import minijava.lang.error.{KeywordThisUsedInMainError, TypeMismatchError, TypeNotSupported, UseBeforeDeclaration}
+import minijava.lang.error.{KeywordThisUsedInMainError, OperationNotSupported, TypeMismatchError, TypeNotSupported, UseBeforeDeclaration}
 import minijava.lang.parser.symboltable.{SymbolTable, SymbolTableType}
 
 import scala.language.postfixOps
@@ -141,15 +141,23 @@ object TypeChecker {
                     case Some(expr) => ???
                     case None => ClassType(n.ClassName)
                 }
-            case n: ExprNot => {
+            case n: ExprNot =>
                 val exprType = expressionTypeCheck(symbolTable, n.expr)
                 if (exprType != boolean())
                     TypeMismatchError("Not (!) operator expecting type " + boolean() + ". Got type " + exprType)
                 n.expr2 match {
-                    case Some(expr) => ???
+                    case Some(expr) =>
+                        expr match {
+                            case _: And | _: LessThan =>
+                                val expr2Type = expression2TypeCheck(symbolTable, expr)
+                                if (expr2Type != boolean())
+                                    TypeMismatchError("Mismatch type of " + boolean() + " with " + expr2Type)
+                            case _ =>
+                                OperationNotSupported("Can only perform boolean operations on booleans.")
+                        }
+                        boolean()
                     case None => boolean()
                 }
-            }
             case n: ExprParenthesis => ???
         }
 

@@ -158,7 +158,16 @@ object TypeChecker {
                         boolean()
                     case None => boolean()
                 }
-            case n: ExprParenthesis => ???
+            case n: ExprParenthesis =>
+                val exprType = expressionTypeCheck(symbolTable, n.expr)
+                n.expr2 match {
+                    case Some(expr) =>
+                        val expr2Type = expression2TypeCheck(symbolTable, expr)
+                        if (exprType != expr2Type)
+                            TypeMismatchError("Mismatch type of " + exprType + " with " + expr2Type)
+                        exprType
+                    case None => exprType
+                }
         }
 
     }

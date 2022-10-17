@@ -16,7 +16,7 @@ class ParserSpec extends AnyFlatSpec {
         for (file <- files) {
             if (! file.getName.endsWith(".sh")) {
                 try {
-                    val parseTree = Parser.parse(example_filepath + file.getName)
+                    val parseTree = Parser.parseFile(example_filepath + file.getName)
                     println(parseTree.toStringTree())
                 } catch {
                     case _: Exception => println("Could not parse file: " + file.getName + ". Moving on ...")

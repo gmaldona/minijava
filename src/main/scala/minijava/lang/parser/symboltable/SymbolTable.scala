@@ -77,6 +77,13 @@ class SymbolTable(tag: String) {
             .nonEmpty
     }
 
+    def getClassNode(symbol: String): ClassDecl = {
+        tableEntries
+            .filter( entry => entry._1.equals(symbol))
+            .filter( entry => entry._2 == SymbolTableType.Class)
+            .head._4.asInstanceOf[ClassDecl]
+    }
+
     def getTableEntries(symbol: String, tableType: SymbolTableType): List[tableEntry] = {
         tableEntries
             .filter( entry => entry._1.equals(symbol))

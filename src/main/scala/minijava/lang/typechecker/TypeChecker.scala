@@ -25,6 +25,13 @@ object TypeChecker {
                 if (node.ClassName.id.equals(superClass.id))
                     IllegalInheritance("Class " + node.ClassName + " cannot extend itself.")
 
+                symbolTable.getClassNode(superClass.id).superClass match {
+                    case Some(klass) =>
+                        if (klass.equals(node.ClassName)) {
+                            IllegalInheritance("Circular Inheritance between " + node.ClassName.id + " and " + superClass.id)
+                        }
+                    case None =>
+                }
             case None =>
         }
     }

@@ -5,6 +5,9 @@ abstract class MiniJavaError(msg: String) {
     val RED_TEXT   = "\u001B[31m"
     val PLAIN_TEXT = "\u001B[0m"
 
-    println(RED_TEXT + msg + PLAIN_TEXT)
-    System.exit(1)
+    throw new NoStackTraceThrowable(RED_TEXT + msg + PLAIN_TEXT)
+
+    class NoStackTraceThrowable(msg: String) extends Throwable(msg) {
+        override def fillInStackTrace: Throwable = this
+    }
 }

@@ -17,13 +17,12 @@ object Compiler {
             FileNotFound(filename)
         }
 
-        val parseTree = Parser.parse(filename)
+        val parseTree = Parser.parseFile(filename)
         val miniJavaVisitor = new MiniJavaVisitorImpl()
         val AST = miniJavaVisitor.visit(parseTree)
         println(AST)
 
         val symbolTable = new SymbolTableBuilder(AST).symbolTable
-//        TypeChecker.typeCheck(symbolTable, AST)
     }
 
 }

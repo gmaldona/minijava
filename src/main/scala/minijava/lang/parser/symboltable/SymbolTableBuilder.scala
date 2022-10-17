@@ -86,6 +86,8 @@ class SymbolTableBuilder(AST: ASTNode) {
 
             case _: AssignStatement =>
                 TypeChecker.typeCheck(symbolTable, node)
+            case _: ArrayAssignStatement =>
+                TypeChecker.typeCheck(symbolTable, node)
             case _                  =>
         }
 

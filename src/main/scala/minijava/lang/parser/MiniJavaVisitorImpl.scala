@@ -186,7 +186,6 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
 
     override def visitExprId(ctx: MiniJavaParser.ExprIdContext): ASTNode = {
 
-
         val id = Identifier(ctx.Identifier().getText)
         val expr2 = if (ctx.expression2().children != null)
             Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None

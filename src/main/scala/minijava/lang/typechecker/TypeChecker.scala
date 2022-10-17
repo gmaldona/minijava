@@ -14,6 +14,7 @@ object TypeChecker {
             case _: ClassDecl => illegalInheritanceCheck(symbolTable, node.asInstanceOf[ClassDecl])
             case _: AssignStatement => assignStatementTypeCheck(symbolTable, node.asInstanceOf[AssignStatement])
             case _: MethodDecl => returnStatementTypeCheck(symbolTable, node.asInstanceOf[MethodDecl])
+            case _: ArrayAssignStatement => arrayAssignStatementTypeCheck(symbolTable, node.asInstanceOf[ArrayAssignStatement])
         }
     }
 
@@ -21,7 +22,7 @@ object TypeChecker {
         node.superClass match {
             case Some(superClass) =>
                 if (! symbolTable.containsClass(superClass.id))
-                    IllegalInheritance("Class " + superClass.id + " does not exist.")
+                     IllegalInheritance("Class " + superClass.id + " does not exist.")
                 if (node.ClassName.id.equals(superClass.id))
                     IllegalInheritance("Class " + node.ClassName + " cannot extend itself.")
 
@@ -40,6 +41,17 @@ object TypeChecker {
         val returnType: Type = expressionTypeCheck(symbolTable, node.returnExpr)
         if (node.methodType != returnType)
             TypeMismatchError("Got a return type of " + returnType + " when expecting a return type of " + node.methodType)
+    }
+
+    def arrayAssignStatementTypeCheck(symbolTable: SymbolTable, node: ArrayAssignStatement): Unit = {
+        val indexExpr = expressionTypeCheck(symbolTable, node.indexExpr)
+        if (indexExpr != int()) {
+            TypeMismatchError("Expecting an index expression of type " + int() + ". Got an expression of type " + indexExpr)
+        }
+        val assignExpr = expressionTypeCheck(symbolTable, node.expr)
+        if (assignExpr != int()) {
+            TypeMismatchError("Expecting an expression of type " + int() + ". Got an expression of type " + assignExpr)
+        }
     }
 
     def assignStatementTypeCheck(symbolTable: SymbolTable, node: AssignStatement): Unit = {
@@ -85,6 +97,7 @@ object TypeChecker {
                     case None => boolean()
                 }
             case n: ExprId =>
+
                 var currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
                 breakable {
                     while (true) {
@@ -219,9 +232,9 @@ object TypeChecker {
                 n.expr2 match {
                     case Some(expr) =>
                         val expr2Type = expression2TypeCheck(symbolTable, expr)
-                        if (expr2Type != expressionTypeCheck(symbolTable, n.expr))
+                        if (expr2Type != int())
                             TypeMismatchError("Mismatch type of " + exprType + " with " + expr2Type)
-                        exprType
+                        int()
                     case None => int()
                 }
             case n: ArrayLength =>

@@ -113,8 +113,21 @@ class SymbolTableBuilder(AST: ASTNode) {
             }
 
             buildSymbolTable(symbolTable, node.mainClass)
-            for (classDecl <- node.ClassDecls)
+
+            val noExtends = node.ClassDecls
+                .filter( klass => klass.superClass.isEmpty)
+
+            for (klass <- noExtends) {
+                buildSymbolTable(symbolTable, klass)
+            }
+
+            val hasExtends = node.ClassDecls
+                .filter( klass => klass.superClass.nonEmpty)
+
+
+            for (classDecl <- hasExtends) {
                 buildSymbolTable(symbolTable, classDecl)
+            }
         }
 
         def mainClass(parentSymbolTable: SymbolTable, node: MainClass): Unit = {

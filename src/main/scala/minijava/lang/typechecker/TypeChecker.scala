@@ -240,41 +240,75 @@ object TypeChecker {
                     while (true) {
                         currentSymbolTable match {
                             case Some(table) =>
-                                if (table.containsSymbol(n.id.id))
-                                    break
+                                println(table)
+                                if (table.containsSymbol(n.id.id) && table.getTableEntries(n.id.id, SymbolTableType.Method).nonEmpty){
+
+                                    if (n.memberParams.get.isEmpty) {
+                                        val hasMethodWithNoParams = currentSymbolTable.get.getTableEntries(n.id.id, SymbolTableType.Method)
+                                            .filter(entry => entry._4.asInstanceOf[MethodDecl].methodParams.isEmpty)
+
+                                        if (hasMethodWithNoParams.nonEmpty) {
+                                            return hasMethodWithNoParams.head._4.asInstanceOf[MethodDecl].methodType
+                                        }
+                                    }
+
+                                    val exprTypes: List[Type] = n.memberParams.get.map( param => expressionTypeCheck(currentSymbolTable.get, param))
+
+                                    val method = currentSymbolTable.get.getTableEntries(n.id.id, SymbolTableType.Method)
+                                        .filter(entry => entry._4.asInstanceOf[MethodDecl].methodParams.map(param => param._1) == exprTypes)
+
+                                    if (method.nonEmpty)
+                                        return method.head._4.asInstanceOf[MethodDecl].methodType
+
+                                }
+
+
+                                table.parentSymbolTable match {
+                                    case Some(pTable) =>
+                                        if (pTable.getTag.equals("Program")) { // check for method override then
+                                            pTable.getClassNode(table.getTag).superClass match {
+                                                case Some(superClass) =>
+                                                    val superClassTable = pTable.childrenSymbolTables
+                                                        .filter( childTable => childTable.getTag.equals(superClass.id))
+                                                        .head
+
+                                                /* */
+                                                    if (n.memberParams.get.isEmpty) {
+                                                        val hasMethodWithNoParams = superClassTable.getTableEntries(n.id.id, SymbolTableType.Method)
+                                                            .filter(entry => entry._4.asInstanceOf[MethodDecl].methodParams.isEmpty)
+                                                        if (hasMethodWithNoParams.isEmpty) {
+                                                            UseBeforeDeclaration("Method " + n.id.id + " was used before declared.")
+                                                        }
+
+                                                        return hasMethodWithNoParams.head._4.asInstanceOf[MethodDecl].methodType
+                                                    }
+
+                                                    val exprTypes: List[Type] = n.memberParams.get.map( param => expressionTypeCheck(superClassTable, param))
+
+                                                    val method = superClassTable.getTableEntries(n.id.id, SymbolTableType.Method)
+                                                        .filter(entry => entry._4.asInstanceOf[MethodDecl].methodParams.map(param => param._1) == exprTypes)
+
+                                                    if (method.isEmpty)
+                                                        UseBeforeDeclaration("Method " + n.id.id + " was used before declared")
+
+                                                    method.head._4.asInstanceOf[MethodDecl].methodType
+                                                 /* */
+
+                                                case None => UseBeforeDeclaration("Method " + n.id.id + " was used before declared.")
+                                            }
+                                        }
+                                    case None =>
+                                }
                                 currentSymbolTable = table.parentSymbolTable
-                            case None => ??? // if not exists in traversing up, then check for method overriding
+                            case None => ???
+
+
                         }
                     }
+
                 }
+                int()
 
-                n.memberParams match {
-                    case Some(_) =>
-                    case None => UseBeforeDeclaration("")
-                }
-
-                println
-
-                if (n.memberParams.get.isEmpty) {
-                    val hasMethodWithNoParams = currentSymbolTable.get.getTableEntries(n.id.id, SymbolTableType.Method)
-                        .filter(entry => entry._4.asInstanceOf[MethodDecl].methodParams.isEmpty)
-                    println(currentSymbolTable.get)
-                    if (hasMethodWithNoParams.isEmpty) {
-                        UseBeforeDeclaration("Method " + n.id.id + " was used before declared")
-                    }
-
-                    return hasMethodWithNoParams.head._4.asInstanceOf[MethodDecl].methodType
-                }
-
-                val exprTypes: List[Type] = n.memberParams.get.map( param => expressionTypeCheck(currentSymbolTable.get, param))
-
-                val method = currentSymbolTable.get.getTableEntries(n.id.id, SymbolTableType.Method)
-                    .filter(entry => entry._4.asInstanceOf[MethodDecl].methodParams.map(param => param._1) == exprTypes)
-
-                if (method.isEmpty)
-                    UseBeforeDeclaration("Method " + n.id.id + " was used before declared")
-
-                method.head._4.asInstanceOf[MethodDecl].methodType
         }
     }
 

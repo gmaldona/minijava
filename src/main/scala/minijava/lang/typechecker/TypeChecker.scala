@@ -240,7 +240,6 @@ object TypeChecker {
                     while (true) {
                         currentSymbolTable match {
                             case Some(table) =>
-                                println(table)
                                 if (table.containsSymbol(n.id.id) && table.getTableEntries(n.id.id, SymbolTableType.Method).nonEmpty){
 
                                     if (n.memberParams.get.isEmpty) {

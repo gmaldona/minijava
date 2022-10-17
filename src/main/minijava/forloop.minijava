@@ -1,15 +1,14 @@
 class Main {
-
     public static void main(String[] args) {
-        a = 3;
+        System.out.println(new Main2().test());
     }
-
 }
 
 class Main2 {
-    Mainth t;
-    public int start() {
-       t = this;
-       return 0;
+
+    public int[] test() {
+        for (int i = 1; i < 10; i++) {
+            i = i + 1;
+        }
     }
 }

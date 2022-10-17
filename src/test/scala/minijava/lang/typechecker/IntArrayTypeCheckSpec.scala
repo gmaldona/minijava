@@ -53,7 +53,7 @@ class IntArrayTypeCheckSpec extends AnyFlatSpec {
           """.stripMargin
 
     it should "throw a TypeMismatchError" in {
-        a [Exception] should be thrownBy {
+        a [Throwable] should be thrownBy {
             val parseTree = Parser.parseStream(testProgram)
             val miniJavaVisitor = new MiniJavaVisitorImpl()
             val AST = miniJavaVisitor.visit(parseTree)
@@ -80,7 +80,7 @@ class IntArrayTypeCheckSpec extends AnyFlatSpec {
           """.stripMargin
 
     it should "throw a TypeMismatchError for array index" in {
-        a [Exception] should be thrownBy {
+        a [Throwable] should be thrownBy {
             val parseTree = Parser.parseStream(testProgram)
             val miniJavaVisitor = new MiniJavaVisitorImpl()
             val AST = miniJavaVisitor.visit(parseTree)

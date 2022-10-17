@@ -52,7 +52,7 @@ class IntTypeCheckSpec extends AnyFlatSpec {
           """.stripMargin
 
     it should "throw a TypeMismatchError" in {
-        a [Exception] should be thrownBy {
+        a [Throwable] should be thrownBy {
             val parseTree = Parser.parseStream(testProgram)
             val miniJavaVisitor = new MiniJavaVisitorImpl()
             val AST = miniJavaVisitor.visit(parseTree)

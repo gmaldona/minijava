@@ -11,7 +11,6 @@ class SymbolTableBuilder(AST: ASTNode) {
 
     val symbolTable = new SymbolTable("Program")
     buildSymbolTable(symbolTable, AST)
-    hasUniqueSymbols(symbolTable)
 
     def hasUniqueSymbols(symbolTable: SymbolTable): Unit = {
         var uniqueEntries = symbolTable.tableEntries
@@ -52,9 +51,7 @@ class SymbolTableBuilder(AST: ASTNode) {
 
                 if (uniqueMethods.size != methodOverloads.size)
                     SymbolAlreadyDefined("Method has multiple definitions.")
-
             }
-
         }
 
         uniqueEntries = symbolTable.tableEntries
@@ -73,24 +70,14 @@ class SymbolTableBuilder(AST: ASTNode) {
         node match {
             case _: Program        => TableEntry.program(symbolTable, node.asInstanceOf[Program])
             case _: MainClass      => TableEntry.mainClass(symbolTable, node.asInstanceOf[MainClass])
-            case _: ClassDecl      =>
-                TableEntry.classDecl(symbolTable, node.asInstanceOf[ClassDecl])
-                TypeChecker.typeCheck(symbolTable, node.asInstanceOf[ClassDecl])
-            case _: MethodDecl     =>
-                TableEntry.methodDecl(symbolTable, node.asInstanceOf[MethodDecl])
-                TypeChecker.typeCheck(symbolTable.childrenSymbolTables.last, node)
+            case _: ClassDecl      => TableEntry.classDecl(symbolTable, node.asInstanceOf[ClassDecl])
+            case _: MethodDecl     => TableEntry.methodDecl(symbolTable, node.asInstanceOf[MethodDecl])
             case _: StatementBlock => TableEntry.statementBlock(symbolTable, node.asInstanceOf[StatementBlock])
             case _: WhileLoop      => TableEntry.whileLoop(symbolTable, node.asInstanceOf[WhileLoop])
             case _: ForLoop        => TableEntry.forLoop(symbolTable, node.asInstanceOf[ForLoop])
             case _: IfStatement    => TableEntry.ifStatement(symbolTable, node.asInstanceOf[IfStatement])
-
-            case _: AssignStatement =>
-                TypeChecker.typeCheck(symbolTable, node)
-            case _: ArrayAssignStatement =>
-                TypeChecker.typeCheck(symbolTable, node)
-            case _                  =>
+            case _                 =>
         }
-
     }
 
     object TableEntry {
@@ -259,7 +246,6 @@ class SymbolTableBuilder(AST: ASTNode) {
             buildSymbolTable(symbolTable, node.statement)
         }
 
-
         def ifStatement(parentSymbolTable: SymbolTable, node: IfStatement): Unit = {
             val symbolTable = new SymbolTable(parentSymbolTable.getTag + " - If Statement")
             parentSymbolTable.addChildSymbolTable(symbolTable)
@@ -268,7 +254,5 @@ class SymbolTableBuilder(AST: ASTNode) {
             buildSymbolTable(symbolTable, node.statement)
             buildSymbolTable(symbolTable, node.elseStatement)
         }
-        def assign(): Unit = ???
-        def arrayAssign(): Unit = ???
     }
 }

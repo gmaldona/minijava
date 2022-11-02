@@ -77,6 +77,15 @@ class SymbolTable(tag: String) {
             .nonEmpty
     }
 
+    def getChildSymbolTable(_tag: String): Option[SymbolTable] = {
+        val tables = childrenSymbolTables
+            .filter( table => table.getTag.equals(_tag) )
+
+        if (tables.isEmpty)
+            return None
+        Some(tables.head)
+    }
+
     def getClassNode(symbol: String): ClassDecl = {
         tableEntries
             .filter( entry => entry._1.equals(symbol))

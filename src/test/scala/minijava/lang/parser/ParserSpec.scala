@@ -36,7 +36,9 @@ object ParserTest {
         val parseTree = Parser.parseStream(testProgram)
         val miniJavaVisitor = new MiniJavaVisitorImpl()
         val AST = miniJavaVisitor.visit(parseTree)
-        val symbolTable = new SymbolTableBuilder(AST).symbolTable
+        val symbolTableBuilder = new SymbolTableBuilder(AST)
+        val symbolTable = symbolTableBuilder.symbolTable
+        symbolTableBuilder.hasUniqueSymbols(symbolTable)
         TypeChecker.typeCheck(symbolTable, AST)
     }
 }

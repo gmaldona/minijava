@@ -69,8 +69,6 @@ class VarNotDeclaredSpec extends AnyFlatSpec {
              }
               """.stripMargin
 
-        a [Throwable] should be thrownBy {
             ParserTest.run(testProgram)
-        }
     }
 }

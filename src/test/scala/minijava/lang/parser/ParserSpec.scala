@@ -1,6 +1,8 @@
 package minijava.lang.parser
 
 import minijava.lang.parser.Parser
+import minijava.lang.parser.symboltable.SymbolTableBuilder
+import minijava.lang.typechecker.TypeChecker
 
 import java.io.File
 import org.scalatest.flatspec.AnyFlatSpec
@@ -24,5 +26,17 @@ class ParserSpec extends AnyFlatSpec {
 
             }
         }
+    }
+
+}
+
+object ParserTest {
+    @throws[Exception]
+    def run(testProgram: String): Unit = {
+        val parseTree = Parser.parseStream(testProgram)
+        val miniJavaVisitor = new MiniJavaVisitorImpl()
+        val AST = miniJavaVisitor.visit(parseTree)
+        val symbolTable = new SymbolTableBuilder(AST).symbolTable
+        TypeChecker.typeCheck(symbolTable, AST)
     }
 }

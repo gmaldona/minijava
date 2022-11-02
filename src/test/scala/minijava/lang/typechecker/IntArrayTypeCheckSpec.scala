@@ -1,7 +1,7 @@
 package minijava.lang.typechecker
 
 import minijava.lang.parser.symboltable.SymbolTableBuilder
-import minijava.lang.parser.{MiniJavaVisitorImpl, Parser}
+import minijava.lang.parser.{MiniJavaVisitorImpl, Parser, ParserTest}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers.{a, be}
 
@@ -9,8 +9,9 @@ import scala.language.postfixOps
 
 class IntArrayTypeCheckSpec extends AnyFlatSpec {
 
-    var testProgram =
-        """
+    "The Type Checker for int" should "pass" in {
+        val testProgram =
+            """
            class Main {
             public static void main(String[] args) {
                 System.out.println(new Main2().test());
@@ -26,16 +27,12 @@ class IntArrayTypeCheckSpec extends AnyFlatSpec {
             }
            }
           """.stripMargin
-
-    "The Type Checker for int" should "pass" in {
-        val parseTree = Parser.parseStream(testProgram)
-        val miniJavaVisitor = new MiniJavaVisitorImpl()
-        val AST = miniJavaVisitor.visit(parseTree)
-        new SymbolTableBuilder(AST).symbolTable
+        ParserTest.run(testProgram)
     }
 
-    testProgram =
-        """
+    it should "throw a TypeMismatchError" in {
+        val testProgram =
+            """
            class Main {
             public static void main(String[] args) {
                 System.out.println(new Main2().test());
@@ -51,18 +48,14 @@ class IntArrayTypeCheckSpec extends AnyFlatSpec {
             }
            }
           """.stripMargin
-
-    it should "throw a TypeMismatchError" in {
         a [Throwable] should be thrownBy {
-            val parseTree = Parser.parseStream(testProgram)
-            val miniJavaVisitor = new MiniJavaVisitorImpl()
-            val AST = miniJavaVisitor.visit(parseTree)
-            new SymbolTableBuilder(AST).symbolTable
+            ParserTest.run(testProgram)
         }
     }
 
-    testProgram =
-        """
+    it should "throw a TypeMismatchError for array index" in {
+        val testProgram =
+            """
            class Main {
             public static void main(String[] args) {
                 System.out.println(new Main2().test());
@@ -78,13 +71,8 @@ class IntArrayTypeCheckSpec extends AnyFlatSpec {
             }
            }
           """.stripMargin
-
-    it should "throw a TypeMismatchError for array index" in {
         a [Throwable] should be thrownBy {
-            val parseTree = Parser.parseStream(testProgram)
-            val miniJavaVisitor = new MiniJavaVisitorImpl()
-            val AST = miniJavaVisitor.visit(parseTree)
-            new SymbolTableBuilder(AST).symbolTable
+            ParserTest.run(testProgram)
         }
     }
 }

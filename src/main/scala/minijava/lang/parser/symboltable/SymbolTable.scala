@@ -9,9 +9,10 @@ import minijava.lang.ast._
         |    s_1   |  T_1   |   S_1   |   N_1   |
         -----------------------------------------
 
-
  */
+
 sealed abstract class SymbolTableType()
+
 object SymbolTableType {
     case object Variable   extends SymbolTableType
     case object MainClass  extends SymbolTableType
@@ -21,6 +22,10 @@ object SymbolTableType {
     case object SuperClass extends SymbolTableType
 }
 
+/** Data Structure that contains symbols that are contained within a given scope
+ *
+ * @param tag Symbol Table Tag - descriptive with scope
+ */
 class SymbolTable(tag: String) {
 
     type tableEntry = (String, SymbolTableType, Scope, ASTNode)
@@ -29,31 +34,29 @@ class SymbolTable(tag: String) {
     var childrenSymbolTables: List[SymbolTable] = List()
     var tableEntries: List[tableEntry] = List()
 
-    def setParentSymbolTable(symbolTable: SymbolTable): Unit = {
-        parentSymbolTable = Some(symbolTable)
-    }
+    def scope: Scope = tableEntries.head._3
 
-    def addChildSymbolTable(symbolTable: SymbolTable): Unit = {
-        childrenSymbolTables = symbolTable :: childrenSymbolTables
-    }
+    def getTag: String = tag
 
-    def addEntry(entry: tableEntry): Unit = {
-        tableEntries = entry :: tableEntries
-    }
+    def setParentSymbolTable(symbolTable: SymbolTable): Unit = parentSymbolTable = Some(symbolTable)
 
+    def addChildSymbolTable(symbolTable: SymbolTable): Unit = childrenSymbolTables = symbolTable :: childrenSymbolTables
+
+
+    def addEntry(entry: tableEntry): Unit = tableEntries = entry :: tableEntries
+
+    /**
+     * @param symbol     Symbol
+     * @param symbolType The type of the symbol
+     * @param scope      The scope at which the symbol is attached to
+     * @param node       The node that the symbol represents
+     */
     def addEntry(symbol: String,
                  symbolType: SymbolTableType,
                  scope: Scope,
-                 node: ASTNode): Unit = {
-        val entry = (
-            symbol,
-            symbolType,
-            scope,
-            node
-        )
-        tableEntries = entry :: tableEntries
-    }
+                 node: ASTNode): Unit = tableEntries = (symbol, symbolType, scope, node) :: tableEntries
 
+    /** Add multiple entries to the table at once */
     def addEntries(entries: List[tableEntry]): Unit = {
         for (entry <- entries)
             addEntry(
@@ -64,64 +67,37 @@ class SymbolTable(tag: String) {
             )
     }
 
-    def containsSymbol(symbol: String): Boolean = {
+    /** @return If the table contains a symbol */
+    def containsSymbol(symbol: String): Boolean = tableEntries.exists(entry => entry._1.equals(symbol))
+
+    /** @return If the table contains a class name */
+    def containsClass(symbol: String): Boolean =
         tableEntries
-            .filter( entry => entry._1.equals(symbol))
-            .nonEmpty
-    }
+            .filter(entry => entry._1.equals(symbol))
+            .exists(entry => entry._2 == SymbolTableType.Class)
 
-    def containsClass(symbol: String): Boolean = {
-        tableEntries
-            .filter( entry => entry._1.equals(symbol))
-            .filter( entry => entry._2 == SymbolTableType.Class)
-            .nonEmpty
-    }
+    /** @return The child symbol table with a specific tag */
+    def getChildSymbolTable(tag: String): Option[SymbolTable] =
+        childrenSymbolTables.find(table => table.getTag.equals(tag))
 
-    def getChildSymbolTable(_tag: String): Option[SymbolTable] = {
-        val tables = childrenSymbolTables
-            .filter( table => table.getTag.equals(_tag) )
-
-        if (tables.isEmpty)
-            return None
-        Some(tables.head)
-    }
-
-    def getClassNode(symbol: String): ClassDecl = {
+    /** @return The ClassDecl Node with a specific symbol */
+    def getClassNode(symbol: String): ClassDecl =
         tableEntries
             .filter( entry => entry._1.equals(symbol))
             .filter( entry => entry._2 == SymbolTableType.Class)
             .head._4.asInstanceOf[ClassDecl]
-    }
 
+    /** @return a list of table entries with a given symbol and table type */
     def getTableEntries(symbol: String, tableType: SymbolTableType): List[tableEntry] = {
         tableEntries
             .filter( entry => entry._1.equals(symbol))
             .filter( entry => entry._2 == tableType)
     }
 
-    def getTableEntry(symbol: String, tableType: SymbolTableType): tableEntry = {
+    /** @return a table entry with a given symbol and table type */
+    def getTableEntry(symbol: String, tableType: SymbolTableType): tableEntry =
         tableEntries
             .filter( entry => entry._1.equals(symbol))
             .filter( entry => entry._2 == tableType)
             .head
-    }
-
-    def scope: Scope = tableEntries.head._3
-
-    def getTag: String = tag
-
-    override def toString: String = {
-        val sb = new StringBuilder
-        sb.append("\t" + tag + "\t\n")
-        sb.append("symbol\t\tsymbol type\t\tscope\t\t\t\t\t\t\t\t\t\tnode\n")
-        for (entry <- tableEntries) {
-            val scope = if (entry._3 != null) entry._3.getClass else null
-            sb
-                .append(entry._1 + "\t\t")
-                .append(entry._2 + "\t\t\t")
-                .append(scope + "\t\t\t")
-                .append(entry._4.getClass + "\t\n")
-        }
-        sb.toString()
-    }
 }

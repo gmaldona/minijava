@@ -1,7 +1,7 @@
 package minijava.lang.typechecker
 
 import minijava.lang.ast._
-import minijava.lang.error.{CircularInheritance, IllegalInheritance, KeywordThisUsedInMainError, OperationNotSupported, TypeMismatchError, TypeNotSupported, UseBeforeDeclaration}
+import minijava.lang.error.{CircularInheritance, DuplicatedMethod, KeywordThisUsedInMainError, OperationNotSupported, TypeMismatchError, UseBeforeDeclaration, IllegalInheritedMethodOverload}
 import minijava.lang.parser.symboltable.{SymbolTable, SymbolTableType}
 
 import scala.annotation.tailrec
@@ -14,6 +14,7 @@ object TypeChecker {
         node match {
             case n: Program =>
                 illegalInheritanceCheck(symbolTable, n)
+                superClassMethodOverloadCheck(symbolTable, n)
 
                 for (classDecl <- n.ClassDecls) {
                     val classSymbolTable = symbolTable.getChildSymbolTable(classDecl.ClassName.id).get
@@ -66,7 +67,7 @@ object TypeChecker {
                 case Some(superClass) =>
                     if (!symbolTable.containsClass(superClass.id))
                         UseBeforeDeclaration("Class " + superClass.id + " was used before declared.")
-                    if (stack.contains(node.ClassName.id))
+                    if (stack.contains(superClass))
                         CircularInheritance(node.ClassName.id)
                     buildInheritanceStack(stack :+ superClass.id,
                         symbolTable.getTableEntry(superClass.id, SymbolTableType.Class)._4.asInstanceOf[ClassDecl]
@@ -76,6 +77,44 @@ object TypeChecker {
         }
         for (classDecl <- node.ClassDecls)
             buildInheritanceStack(List(), classDecl)
+    }
+
+    /** Checks if there if there is legal method overloading in super classes
+     *
+     * @param symbolTable Symbol Table for the Program scope
+     * @param node        Node that contains the Program
+     */
+    def superClassMethodOverloadCheck(symbolTable: SymbolTable, node: Program): Unit = {
+        /** Builds a stack of inherited methods through recursion
+         *
+         * @param stack Recursive stack added to
+         * @param node  Each ClassDecl node extends from
+         */
+        @tailrec
+        def buildInheritedMethodStack(stack: List[MethodDecl], node: ClassDecl): List[MethodDecl] = {
+            node.superClass match {
+                case Some(superClass) => buildInheritedMethodStack(stack ::: node.methodDecls, symbolTable.getClassNode(superClass.id))
+                case None => stack ::: node.methodDecls
+            }
+        }
+
+        for (klass <- node.ClassDecls.filter( klass => klass.superClass.nonEmpty )) {
+            val inheritedMethods = buildInheritedMethodStack(List(), klass)
+            for (i <- inheritedMethods.indices; j <- inheritedMethods.indices) {
+                breakable {
+                    if (i == j) break
+                    val firstMethod  = inheritedMethods(i)
+                    val secondMethod = inheritedMethods(j)
+                    if (firstMethod.methodName.id.equals(secondMethod.methodName.id)) { // same method name
+                        if (firstMethod.methodParams.map(param => param._1) == secondMethod.methodParams.map(param => param._1)) { // same params
+                            if (firstMethod.methodType == secondMethod.methodType) DuplicatedMethod(firstMethod.methodName.id)
+                            if (firstMethod.methodType != secondMethod.methodType) IllegalInheritedMethodOverload(firstMethod.methodName.id)
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     /** Checks assignment expression type equal to the declared type of a variable
@@ -166,7 +205,7 @@ object TypeChecker {
 
                     symbolTable.parentSymbolTable match {
                         case Some(parent) => parent.scope match {
-                            case program: Program =>
+                            case _: Program =>
                                 val classNode = parent.getClassNode(symbolTable.getTag)
                                 classNode.superClass match {
                                     case Some(superClass) =>

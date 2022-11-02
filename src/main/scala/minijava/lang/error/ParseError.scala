@@ -23,3 +23,7 @@ case class TypeNotSupported(msg: String) extends ParseError(msg)
 case class KeywordThisUsedInMainError(msg: String = "Keyword this was used in Main class.") extends ParseError(msg)
 
 case class OperationNotSupported(msg: String) extends ParseError(msg)
+
+case class DuplicatedMethod(method: String) extends ParseError("Duplicated method: " + method)
+
+case class IllegalInheritedMethodOverload(method: String) extends ParseError("Illegal method override for " + method)

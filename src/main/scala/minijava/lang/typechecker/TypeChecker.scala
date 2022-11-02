@@ -121,8 +121,15 @@ object TypeChecker {
         }
     }
 
+    /** Returns the type of the expression node
+     * @param symbolTable Symbol Table that contains the scope of the expression
+     * @param node        Node that contains the Expression
+     *
+     * @return The expression Type
+     */
     def expressionTypeCheck(symbolTable: SymbolTable, node: Expression): Type = {
         node match {
+            // Checks the type for a node of ExprNumber - should have a type of int()
             case n: ExprNumber =>
                 n.expr2 match {
                     case Some(expr) =>
@@ -132,6 +139,8 @@ object TypeChecker {
                         int()
                     case None => int()
                 }
+
+            // Checks the type of a node of ExprBoolean - should have a type of boolean()
             case n: ExprBoolean =>
                 n.expr2 match {
                     case Some(expr) =>
@@ -141,21 +150,28 @@ object TypeChecker {
                         boolean()
                     case None => boolean()
                 }
+
+            // Checks the type of a node of ExprId - should have a type of the Identifier()
             case n: ExprId =>
-                var currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
-                breakable {
-                    while (true) {
-                        currentSymbolTable match {
-                            case Some(table) =>
-                                if (table.containsSymbol(n.id.id))
-                                    break
-                                currentSymbolTable = table.parentSymbolTable
-                            case None => UseBeforeDeclaration("Symbol " + n.id.id + " was used before declared.")
-                        }
+                /**
+                 * @param symbolTable Recursed Symbol table
+                 * @param symbol      Symbol searched over each Symbol Table to be found
+                 *
+                 * @return A Symbol Table that contains the symbol
+                 * @throws UseBeforeDeclaration Use Before Declaration on the symbol if the symbol was used before declared
+                 * */
+                def getExprIdSymbolTable(symbolTable: SymbolTable, symbol: String): Option[SymbolTable] = {
+                    if (symbolTable.containsSymbol(symbol))
+                        return Some(symbolTable)
+
+                    symbolTable.parentSymbolTable match {
+                        case Some(table) => getExprIdSymbolTable(table, symbol)
+                        case None => UseBeforeDeclaration("Symbol " + n.id.id + " was used before declared.")
                     }
+                    None
                 }
 
-                val node = currentSymbolTable.get
+                val node = getExprIdSymbolTable(symbolTable, n.id.id).get
                     .getTableEntry(n.id.id, SymbolTableType.Variable)
                     ._4
 
@@ -180,6 +196,8 @@ object TypeChecker {
                         }
                     case None => idType.get
                 }
+
+            // Checks the type of a node NewIntArrayDecl - Should have a type of intArray()
             case n: NewIntArrayDecl =>
                 val sizeExpr = expressionTypeCheck(symbolTable, n.expr)
                 if (sizeExpr != int())
@@ -187,16 +205,22 @@ object TypeChecker {
                 n.expr2 match {
                     case Some(expr) =>
                       expr match {
-                          case _: ArrayLength =>
-                              expression2TypeCheck(symbolTable, expr)
-                          case _ =>
-                              OperationNotSupported("Operation not supported for declaring new int[]")
-                              int()
+                          case _: ArrayLength => expression2TypeCheck(symbolTable, expr)
+                          case _ => OperationNotSupported("Operation not supported for declaring new int[]")
                       }
-                    case None => IntArray()
+                    case None =>
                 }
+                IntArray()
+
+            // Checks the type of a node ExprThis - Should have a type of the scope
             case n: ExprThis =>
 
+                /**
+                 * @param symbolTable Recursed Symbol Table
+                 *
+                 * @return The ClassDecl Node that is the type of this
+                 * @throws KeywordThisUsedInMainError if the recursion does not find a ClassDecl Node
+                 */
                 def getClassType(symbolTable: SymbolTable): Option[ClassDecl] = {
                     symbolTable.parentSymbolTable match {
                         case Some(table) =>
@@ -213,41 +237,42 @@ object TypeChecker {
                 n.expr2 match {
                     case Some(expr) => expression2TypeCheck(symbolTable, expr)
                     case None => ClassType(thisType.get.ClassName)
-
                 }
+
+            // Checks the type of a node of NewClassDecl - Should have a type of the Identifier
             case n: NewClassDecl =>
                 n.expr2 match {
-                    case Some(expr) =>
-                        expression2TypeCheck(symbolTable, expr)
+                    case Some(expr) => expression2TypeCheck(symbolTable, expr)
                     case None => ClassType(n.ClassName)
                 }
+
+            // Checks the type of a node of ExprNot - should have a type of boolean to be negated
             case n: ExprNot =>
                 val exprType = expressionTypeCheck(symbolTable, n.expr)
                 if (exprType != boolean())
                     TypeMismatchError("Not (!) operator expecting type " + boolean() + ". Got type " + exprType)
                 n.expr2 match {
-                    case Some(expr) =>
-                        expr match {
+                    case Some(expr) => expr match {
                             case _: And | _: LessThan =>
                                 val expr2Type = expression2TypeCheck(symbolTable, expr)
-                                if (expr2Type != boolean())
-                                    TypeMismatchError("Mismatch type of " + boolean() + " with " + expr2Type)
+                                if (expr2Type != boolean()) TypeMismatchError("Mismatch type of " + boolean() + " with " + expr2Type)
                             case _ =>
                                 OperationNotSupported("Can only perform boolean operations on booleans.")
                         }
-                        boolean()
-                    case None => boolean()
+                    case None =>
                 }
+                boolean()
+
+            // Checks the type of a node of ExprParenthesis - will call the expression function and return the type of the inner expression
             case n: ExprParenthesis =>
                 val exprType = expressionTypeCheck(symbolTable, n.expr)
                 n.expr2 match {
                     case Some(expr) =>
                         val expr2Type = expression2TypeCheck(symbolTable, expr)
-                        if (exprType != expr2Type)
-                            TypeMismatchError("Mismatch type of " + exprType + " with " + expr2Type)
-                        exprType
-                    case None => exprType
+                        if (exprType != expr2Type) TypeMismatchError("Mismatch type of " + exprType + " with " + expr2Type)
+                    case None =>
                 }
+                exprType
         }
 
     }

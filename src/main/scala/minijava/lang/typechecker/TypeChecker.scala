@@ -165,8 +165,19 @@ object TypeChecker {
                         return Some(symbolTable)
 
                     symbolTable.parentSymbolTable match {
-                        case Some(table) => getExprIdSymbolTable(table, symbol)
-                        case None => UseBeforeDeclaration("Symbol " + n.id.id + " was used before declared.")
+                        case Some(parent) => parent.scope match {
+                            case program: Program =>
+                                val classNode = parent.getClassNode(symbolTable.getTag)
+                                classNode.superClass match {
+                                    case Some(superClass) =>
+                                        val superClassSymbolTable = parent.getChildSymbolTable(superClass.id).get
+                                        if (! superClassSymbolTable.containsSymbol(symbol))
+                                            UseBeforeDeclaration("Symbol " + n.id.id + " was used before declared.")
+                                        return Some(superClassSymbolTable)
+                                    case None => UseBeforeDeclaration("Symbol " + n.id.id + " was used before declared.")
+                                }
+                            case _ => return getExprIdSymbolTable(parent, symbol)
+                        }
                     }
                     None
                 }

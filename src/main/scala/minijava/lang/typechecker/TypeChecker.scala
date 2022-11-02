@@ -274,11 +274,11 @@ object TypeChecker {
                 }
                 exprType
         }
-
     }
 
     def expression2TypeCheck(symbolTable: SymbolTable, node: Expression2): Type = {
         node match {
+            // Check the type of a node of Operator - will call the expression function and return the type of the expr
             case n: Operator =>
                 val exprType = expressionTypeCheck(symbolTable, n.expr)
                 n.expr2 match {
@@ -286,9 +286,11 @@ object TypeChecker {
                         val expr2Type = expression2TypeCheck(symbolTable, expr)
                         if (expr2Type != expressionTypeCheck(symbolTable, n.expr))
                             TypeMismatchError("Mismatch type of " + exprType + " with " + expr2Type)
-                        exprType
-                    case None => exprType
+                    case None =>
                 }
+                exprType
+
+            // Checks the type of a node of ExprArray - Should have a type of int()
             case n: ExprArray =>
                 val exprType = expressionTypeCheck(symbolTable, n.expr)
                 if (exprType != int())
@@ -298,18 +300,21 @@ object TypeChecker {
                         val expr2Type = expression2TypeCheck(symbolTable, expr)
                         if (expr2Type != int())
                             TypeMismatchError("Mismatch type of " + exprType + " with " + expr2Type)
-                        int()
-                    case None => int()
+                    case None =>
                 }
+                int()
+
+            // Checks the type of a node of ArrayLength - Should have a type of int
             case n: ArrayLength =>
                 n.expr2 match {
                     case Some(expr) =>
                         val expr2Type = expression2TypeCheck(symbolTable, expr)
                         if (expr2Type != int())
                             TypeMismatchError("Mismatch type of " + int() + " with " + expr2Type)
-                        int()
-                    case None => int()
+                    case None =>
                 }
+                int()
+
             case n: ExprClassMember =>
                 var currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
 
@@ -374,9 +379,7 @@ object TypeChecker {
                                     case None =>
                                 }
                                 currentSymbolTable = table.parentSymbolTable
-                            case None => ???
-
-
+                            case None =>
                         }
                     }
 

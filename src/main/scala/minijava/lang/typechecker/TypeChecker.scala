@@ -34,8 +34,16 @@ object TypeChecker {
                 assignStatementTypeCheck(symbolTable, n)
             case n: ArrayAssignStatement =>
                 arrayAssignStatementTypeCheck(symbolTable, n)
+            case n: IfStatement =>
+                CheckIfConditionExpression(symbolTable, n)
             case _ =>
         }
+    }
+
+    def CheckIfConditionExpression(symbolTable: SymbolTable, n: IfStatement): Unit = {
+        val exprType = expressionTypeCheck(symbolTable, n.expr)
+        if (exprType != boolean())
+            TypeMismatchError("Expecting type " + boolean() + ". Got type " + exprType)
     }
 
     /** Checks if the returned expression matches the return type of the method signature
@@ -114,7 +122,6 @@ object TypeChecker {
                 }
             }
         }
-
     }
 
     /** Checks assignment expression type equal to the declared type of a variable

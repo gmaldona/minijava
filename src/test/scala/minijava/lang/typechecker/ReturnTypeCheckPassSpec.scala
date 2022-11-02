@@ -7,7 +7,7 @@ import org.scalatest.matchers.must.Matchers.{a, be}
 
 class ReturnTypeCheckPassSpec extends AnyFlatSpec {
 
-        "The Type Checker for method returns" should "pass" in {
+        "The Type Checker for method returns for int" should "pass" in {
             val testProgram: String =
                 """
                class Main {
@@ -26,6 +26,27 @@ class ReturnTypeCheckPassSpec extends AnyFlatSpec {
 
             ParserTest.run(testProgram)
         }
+
+    "The Type Check for method returns for ids" should " pass" in {
+        val testProgram =
+            """
+           class Main {
+            public static void main(String[] args) {
+                System.out.println(new Main2().test());
+            }
+           }
+           class Main3 {
+           }
+
+           class Main2 {
+            public Main3 test() {
+                return new Main3();
+            }
+           }
+          """.stripMargin
+
+        ParserTest.run(testProgram)
+    }
 
     "The Type Check for method returns" should "not pass" in {
         val testProgram =

@@ -1,9 +1,10 @@
 package minijava.lang.typechecker
 
 import minijava.lang.ast._
-import minijava.lang.error.{IllegalInheritance, KeywordThisUsedInMainError, OperationNotSupported, TypeMismatchError, TypeNotSupported, UseBeforeDeclaration}
+import minijava.lang.error.{CircularInheritance, IllegalInheritance, KeywordThisUsedInMainError, OperationNotSupported, TypeMismatchError, TypeNotSupported, UseBeforeDeclaration}
 import minijava.lang.parser.symboltable.{SymbolTable, SymbolTableType}
 
+import scala.annotation.tailrec
 import scala.language.postfixOps
 import scala.util.control.Breaks._
 
@@ -11,49 +12,77 @@ object TypeChecker {
 
     def typeCheck(symbolTable: SymbolTable, node: ASTNode): Unit = {
         node match {
-            case _: ClassDecl => illegalInheritanceCheck(symbolTable, node.asInstanceOf[ClassDecl])
-            case _: AssignStatement => assignStatementTypeCheck(symbolTable, node.asInstanceOf[AssignStatement])
-            case _: MethodDecl => returnStatementTypeCheck(symbolTable, node.asInstanceOf[MethodDecl])
-            case _: ArrayAssignStatement => arrayAssignStatementTypeCheck(symbolTable, node.asInstanceOf[ArrayAssignStatement])
-        }
-    }
+            case n: Program =>
+                illegalInheritanceCheck(symbolTable, n)
 
-    def illegalInheritanceCheck(symbolTable: SymbolTable, node: ClassDecl): Unit = {
-        node.superClass match {
-            case Some(superClass) =>
-                if (! symbolTable.containsClass(superClass.id))
-                     IllegalInheritance("Class " + superClass.id + " does not exist.")
-                if (node.ClassName.id.equals(superClass.id))
-                    IllegalInheritance("Class " + node.ClassName + " cannot extend itself.")
-
-                symbolTable.getClassNode(superClass.id).superClass match {
-                    case Some(klass) =>
-                        if (klass.equals(node.ClassName)) {
-                            IllegalInheritance("Circular Inheritance between " + node.ClassName.id + " and " + superClass.id)
-                        }
-                    case None =>
+                for (classDecl <- n.ClassDecls) {
+                    val classSymbolTable = symbolTable.getChildSymbolTable(classDecl.ClassName.id).get
+                    typeCheck(classSymbolTable, classDecl)
                 }
-            case None =>
+            case n: ClassDecl =>
+                for (methodDecl <- n.methodDecls) {
+                    val methodSymbolTable = symbolTable.getChildSymbolTable(n.ClassName.id + " - " + methodDecl.methodName.id).get
+                    typeCheck(methodSymbolTable, methodDecl)
+                }
+            case n: MethodDecl =>
+                returnStatementTypeCheck(symbolTable, n)
+                for (statement <- n.statements) {
+                    typeCheck(symbolTable, statement)
+                }
+            case n: AssignStatement =>
+                assignStatementTypeCheck(symbolTable, n)
+            case n: ArrayAssignStatement =>
+                arrayAssignStatementTypeCheck(symbolTable, n)
+            case _ =>
         }
     }
 
+    /** Checks if the returned expression matches the return type of the method signature
+     *
+     * @param symbolTable Symbol Table for the Method scope
+     * @param node        Node that contains the MethodDecl
+     */
     def returnStatementTypeCheck(symbolTable: SymbolTable, node: MethodDecl): Unit = {
         val returnType: Type = expressionTypeCheck(symbolTable, node.returnExpr)
         if (node.methodType != returnType)
             TypeMismatchError("Got a return type of " + returnType + " when expecting a return type of " + node.methodType)
     }
 
-    def arrayAssignStatementTypeCheck(symbolTable: SymbolTable, node: ArrayAssignStatement): Unit = {
-        val indexExpr = expressionTypeCheck(symbolTable, node.indexExpr)
-        if (indexExpr != int()) {
-            TypeMismatchError("Expecting an index expression of type " + int() + ". Got an expression of type " + indexExpr)
+    /** Checks if there is illegal inheritance when classes extends another class
+     *
+     * @param symbolTable Symbol Table for the Program scope
+     * @param node        Node that contains the Program
+     */
+    def illegalInheritanceCheck(symbolTable: SymbolTable, node: Program): Unit = {
+
+        /** Builds a stack of inheritance through recursion
+         *
+         * @param stack Recursive stack added to
+         * @param node  Each ClassDecl node extends from
+         */
+        @tailrec
+        def buildInheritanceStack(stack: List[String], node: ClassDecl): Unit = {
+            node.superClass match {
+                case Some(superClass) =>
+                    if (!symbolTable.containsClass(superClass.id))
+                        UseBeforeDeclaration("Class " + superClass.id + " was used before declared.")
+                    if (stack.contains(node.ClassName.id))
+                        CircularInheritance(node.ClassName.id)
+                    buildInheritanceStack(stack :+ superClass.id,
+                        symbolTable.getTableEntry(superClass.id, SymbolTableType.Class)._4.asInstanceOf[ClassDecl]
+                    )
+                case None =>
+            }
         }
-        val assignExpr = expressionTypeCheck(symbolTable, node.expr)
-        if (assignExpr != int()) {
-            TypeMismatchError("Expecting an expression of type " + int() + ". Got an expression of type " + assignExpr)
-        }
+        for (classDecl <- node.ClassDecls)
+            buildInheritanceStack(List(), classDecl)
     }
 
+    /** Checks assignment expression type equal to the declared type of a variable
+     *
+     * @param symbolTable Symbol Table that contains the scope of the statement
+     * @param node        Node that contains the AssignStatement
+     */
     def assignStatementTypeCheck(symbolTable: SymbolTable, node: AssignStatement): Unit = {
         var currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
         breakable {
@@ -74,6 +103,22 @@ object TypeChecker {
         val exprType = expressionTypeCheck(symbolTable, node.expr)
         if (varDeclType != exprType)
             TypeMismatchError("Mismatch type of " + varDeclType + " with " + exprType)
+    }
+
+
+    /** Checks assignment expression type equal to the declared type of a int[]
+     * @param symbolTable Symbol Table that contains the scope of the statement
+     * @param node        Node that contains the ArrayAssignStatement
+     */
+    def arrayAssignStatementTypeCheck(symbolTable: SymbolTable, node: ArrayAssignStatement): Unit = {
+        val indexExpr = expressionTypeCheck(symbolTable, node.indexExpr)
+        if (indexExpr != int()) {
+            TypeMismatchError("Expecting an index expression of type " + int() + ". Got an expression of type " + indexExpr)
+        }
+        val assignExpr = expressionTypeCheck(symbolTable, node.expr)
+        if (assignExpr != int()) {
+            TypeMismatchError("Expecting an expression of type " + int() + ". Got an expression of type " + assignExpr)
+        }
     }
 
     def expressionTypeCheck(symbolTable: SymbolTable, node: Expression): Type = {
@@ -97,7 +142,6 @@ object TypeChecker {
                     case None => boolean()
                 }
             case n: ExprId =>
-
                 var currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
                 breakable {
                     while (true) {
@@ -152,28 +196,23 @@ object TypeChecker {
                     case None => IntArray()
                 }
             case n: ExprThis =>
-                var thisType: Option[Scope] = None
-                var currentSymbolTable: Option[SymbolTable] = Some(symbolTable)
-                breakable {
-                    // TODO: THIS WILL BREAK, NOT TRAVERSING UP THE TREE
-                    while (true) {
-                        currentSymbolTable match {
-                            case Some(table) =>
-                                table.scope match {
-                                    case scopeType: ClassDecl =>
-                                        thisType = Some(scopeType)
-                                        break
-                                    case _ =>
-                                        currentSymbolTable = table.parentSymbolTable
-                                }
-                            case None => KeywordThisUsedInMainError()
-                        }
+
+                def getClassType(symbolTable: SymbolTable): Option[ClassDecl] = {
+                    symbolTable.parentSymbolTable match {
+                        case Some(table) =>
+                            table.scope match {
+                                case _: ClassDecl => Some(table.scope.asInstanceOf[ClassDecl])
+                                case _ => KeywordThisUsedInMainError()
+                            }
+                        case None => KeywordThisUsedInMainError()
                     }
+                    None
                 }
+                val thisType: Option[ClassDecl] = getClassType(symbolTable)
+
                 n.expr2 match {
-                    case Some(expr) =>
-                        expression2TypeCheck(symbolTable, expr)
-                    case None => ClassType(thisType.get.asInstanceOf[ClassDecl].ClassName)
+                    case Some(expr) => expression2TypeCheck(symbolTable, expr)
+                    case None => ClassType(thisType.get.ClassName)
 
                 }
             case n: NewClassDecl =>
@@ -274,7 +313,6 @@ object TypeChecker {
 
                                 }
 
-
                                 table.parentSymbolTable match {
                                     case Some(pTable) =>
                                         if (pTable.getTag.equals("Program")) { // check for method override then
@@ -284,7 +322,6 @@ object TypeChecker {
                                                         .filter( childTable => childTable.getTag.equals(superClass.id))
                                                         .head
 
-                                                /* */
                                                     if (n.memberParams.get.isEmpty) {
                                                         val hasMethodWithNoParams = superClassTable.getTableEntries(n.id.id, SymbolTableType.Method)
                                                             .filter(entry => entry._4.asInstanceOf[MethodDecl].methodParams.isEmpty)

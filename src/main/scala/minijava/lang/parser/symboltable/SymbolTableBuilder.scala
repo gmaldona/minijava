@@ -113,7 +113,6 @@ class SymbolTableBuilder(AST: ASTNode) {
             val hasExtends = node.ClassDecls
                 .filter( klass => klass.superClass.nonEmpty)
 
-
             for (classDecl <- hasExtends) {
                 buildSymbolTable(symbolTable, classDecl)
             }
@@ -164,7 +163,7 @@ class SymbolTableBuilder(AST: ASTNode) {
 
 
             node.superClass match {
-                case Some(n) => {
+                case Some(n) =>
                     val superClassSymbol = (
                         n.id,
                         SymbolTableType.SuperClass,
@@ -172,7 +171,6 @@ class SymbolTableBuilder(AST: ASTNode) {
                         n
                     )
                     symbolTable.addEntry(superClassSymbol)
-                }
                 case None =>
             }
 

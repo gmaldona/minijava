@@ -4,13 +4,10 @@ target/
 env/
 build/
 project/target/
+minijava-target/
+.java/
 
 # Mini Java files
-src/main/scala/antlr4/MiniJava.interp
-src/main/scala/antlr4/MiniJava.tokens
-src/main/scala/antlr4/MiniJavaBaseVisitor.java
-src/main/scala/antlr4/MiniJavaLexer.java
-src/main/scala/antlr4/MiniJavaLexer.interp
-src/main/scala/antlr4/MiniJavaLexer.tokens
-src/main/scala/antlr4/MiniJavaParser.java
-src/main/scala/antlr4/MiniJavaVisitor.java
+src/main/scala/antlr4/*.interp
+src/main/scala/antlr4/*.tokens
+src/main/scala/antlr4/*.java

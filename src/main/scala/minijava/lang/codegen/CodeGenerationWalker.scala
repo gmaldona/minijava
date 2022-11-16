@@ -1,10 +1,19 @@
+/**
+ * CSC 444 - Compiler Design
+ * State University of New York, College at Oswego
+ *
+ * @author  Gregory Maldonado
+ * @date    November 15, 2022
+ * @version 1.0
+ */
+
 package minijava.lang.codegen
 
 import minijava.lang.ast._
 import org.objectweb.asm.{ClassVisitor, ClassWriter}
 import org.objectweb.asm.Opcodes._
 
-class CodeGenerationWalker {
+class sCodeGenerationWalker {
 
     def walkAST(node: ASTNode): Unit = {
         node match {

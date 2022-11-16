@@ -1,7 +1,8 @@
 package minijava.lang.typechecker
 
 import minijava.lang.ast._
-import minijava.lang.error.{CircularInheritance, DuplicatedMethod, KeywordThisUsedInMainError, OperationNotSupported, TypeMismatchError, UseBeforeDeclaration, IllegalInheritedMethodOverload}
+import minijava.lang.error.IllegalInheritedMethodOverload
+import minijava.lang.error.parser.{CircularInheritance, DuplicatedMethod, IllegalInheritedMethodOverload, KeywordThisUsedInMainError, OperationNotSupported, TypeMismatchError, UseBeforeDeclaration}
 import minijava.lang.parser.symboltable.{SymbolTable, SymbolTableType}
 
 import scala.annotation.tailrec

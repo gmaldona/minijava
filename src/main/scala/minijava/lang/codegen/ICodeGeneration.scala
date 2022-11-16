@@ -1,3 +1,12 @@
+/**
+ * CSC 444 - Compiler Design
+ * State University of New York, College at Oswego
+ *
+ * @author  Gregory Maldonado
+ * @date    November 15, 2022
+ * @version 1.0
+ */
+
 package minijava.lang.codegen
 
 import minijava.lang.ast._

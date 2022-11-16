@@ -1,9 +1,16 @@
+/**
+ * CSC 444 - Compiler Design
+ * State University of New York, College at Oswego
+ *
+ * @author  Gregory Maldonado
+ * @date    November 15, 2022
+ * @version 1.0
+ */
+
 package minijava.lang.parser.symboltable
 
-import minijava.lang.ast.ASTAliases.MethodParam
 import minijava.lang.ast._
-import minijava.lang.error.{IllegalInheritance, SymbolAlreadyDefined}
-import minijava.lang.typechecker.TypeChecker
+import minijava.lang.error.parser.{IllegalInheritance, SymbolAlreadyDefined}
 
 import scala.language.postfixOps
 

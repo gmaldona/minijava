@@ -1,9 +1,17 @@
+/**
+ * CSC 444 - Compiler Design
+ * State University of New York, College at Oswego
+ *
+ * @author  Gregory Maldonado
+ * @date    November 15, 2022
+ * @version 1.0
+ */
+
 package minijava.lang.parser
 
 import antlr4.{MiniJavaBaseVisitor, MiniJavaParser}
 import minijava.lang.ast.ASTAliases.MethodParam
 import minijava.lang.ast._
-import minijava.lang.error.TypeError
 
 import scala.language.postfixOps
 

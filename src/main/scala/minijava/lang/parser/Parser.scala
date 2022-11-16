@@ -1,3 +1,12 @@
+/**
+ * CSC 444 - Compiler Design
+ * State University of New York, College at Oswego
+ *
+ * @author  Gregory Maldonado
+ * @date    November 15, 2022
+ * @version 1.0
+ */
+
 package minijava.lang.parser
 
 import org.antlr.v4.runtime._
@@ -9,9 +18,9 @@ import minijava.lang.error.ParseErrorInstance
 object Parser {
 
     @throws[ParseCancellationException]
-    def parseFile(filename: String): MiniJavaParser.ProgramContext = {
+    def parse(input: String, isFile: Boolean = true):  MiniJavaParser.ProgramContext = {
+        var charStream = if (isFile) CharStreams.fromFileName(input) else CharStreams.fromString(input)
 
-        val charStream = CharStreams.fromFileName(filename)
         val miniJavaLexer = new MiniJavaLexer(charStream)
         miniJavaLexer.removeErrorListeners()
         miniJavaLexer.addErrorListener(ParseErrorInstance.INSTANCE)
@@ -24,17 +33,4 @@ object Parser {
         miniJavaParser.program()
     }
 
-    def parseStream(input: String): MiniJavaParser.ProgramContext = {
-        val charStream = CharStreams.fromString(input)
-        val miniJavaLexer = new MiniJavaLexer(charStream)
-        miniJavaLexer.removeErrorListeners()
-        miniJavaLexer.addErrorListener(ParseErrorInstance.INSTANCE)
-
-        val tokenStream = new CommonTokenStream(miniJavaLexer)
-        val miniJavaParser = new MiniJavaParser(tokenStream)
-        miniJavaParser.removeErrorListeners()
-        miniJavaParser.addErrorListener(ParseErrorInstance.INSTANCE)
-
-        miniJavaParser.program()
-    }
 }

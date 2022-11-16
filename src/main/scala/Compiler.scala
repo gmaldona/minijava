@@ -1,10 +1,10 @@
 import minijava.lang.ast.Program
 import minijava.lang.codegen.CodeGenerationImpl
+import minijava.lang.codegen.CodeGenerationImpl.ClassWriterT
 import minijava.lang.codegen.util.ByteArrayClassLoader
 
 import java.io.{File, FileOutputStream}
 import minijava.lang.parser.{MiniJavaVisitorImpl, Parser}
-import minijava.lang.error.FileNotFound
 import minijava.lang.error.compile.{CompilerError, FileNotFound}
 import minijava.lang.parser.symboltable.SymbolTableBuilder
 import minijava.lang.typechecker.TypeChecker
@@ -36,17 +36,21 @@ object Compiler {
         TypeChecker.typeCheck(symbolTable, AST)
 
         // Phase 3
-        val classWriter = new CodeGenerationImpl().mainClass(AST.asInstanceOf[Program].mainClass)
-        val bytes = classWriter.toByteArray
+        val targetDir = new File("minijava-target")
+        if (! targetDir.isDirectory) {
+            targetDir.mkdir()
+        }
+        val cws: List[ClassWriterT] = CodeGenerationImpl.generate(AST.asInstanceOf[Program])
+        for (cw <- cws) {
+            val classWriter = cw._1
+            val className   = cw._2
 
-        val file = new File(AST.asInstanceOf[Program].mainClass.ClassName.id + ".class")
-        val os = new FileOutputStream(file)
-        os.write(bytes)
+            val bytes = classWriter.toByteArray
+            val os = new FileOutputStream(new File(targetDir.getName + "/" + className + ".class"))
 
-        val mainClass: Class[_] = new ByteArrayClassLoader().defineClass(AST.asInstanceOf[Program].mainClass.ClassName.id, bytes)
-
-        val classReader: ClassReader = new ClassReader(bytes)
-        classReader.accept(classWriter, 0)
+            os.write(bytes)
+            println("\u001B[32m Generated class file: " + className + "\u001B[0m" )
+        }
 
     }
 

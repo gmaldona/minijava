@@ -1,6 +1,6 @@
 package minijava.lang.typechecker
 
-import minijava.lang.error.TypeMismatchError
+import minijava.lang.error.parser.TypeMismatchError
 import minijava.lang.parser.symboltable.SymbolTableBuilder
 import minijava.lang.parser.{MiniJavaVisitorImpl, Parser, ParserTest}
 import org.scalatest.flatspec.AnyFlatSpec

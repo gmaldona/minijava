@@ -18,7 +18,7 @@ class ParserSpec extends AnyFlatSpec {
         for (file <- files) {
             if (! file.getName.endsWith(".sh")) {
                 try {
-                    val parseTree = Parser.parseFile(example_filepath + file.getName)
+                    val parseTree = Parser.parse(example_filepath + file.getName)
                     println(parseTree.toStringTree())
                 } catch {
                     case _: Exception => println("Could not parse file: " + file.getName + ". Moving on ...")
@@ -33,7 +33,7 @@ class ParserSpec extends AnyFlatSpec {
 object ParserTest {
     @throws[Exception]
     def run(testProgram: String): Unit = {
-        val parseTree = Parser.parseStream(testProgram)
+        val parseTree = Parser.parse(testProgram)
         val miniJavaVisitor = new MiniJavaVisitorImpl()
         val AST = miniJavaVisitor.visit(parseTree)
         val symbolTableBuilder = new SymbolTableBuilder(AST)

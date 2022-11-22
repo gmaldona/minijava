@@ -75,7 +75,7 @@ object TypeChecker {
                 case Some(superClass) =>
                     if (!symbolTable.containsClass(superClass.id))
                         UseBeforeDeclaration("Class " + superClass.id + " was used before declared.")
-                    if (stack.contains(superClass))
+                    if (stack.contains(superClass.id))
                         CircularInheritance(node.ClassName.id)
                     buildInheritanceStack(stack :+ superClass.id,
                         symbolTable.getTableEntry(superClass.id, SymbolTableType.Class)._4.asInstanceOf[ClassDecl]

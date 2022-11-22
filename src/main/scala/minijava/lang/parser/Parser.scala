@@ -18,8 +18,8 @@ import minijava.lang.error.ParseErrorInstance
 object Parser {
 
     @throws[ParseCancellationException]
-    def parse(input: String, isFile: Boolean = true):  MiniJavaParser.ProgramContext = {
-        var charStream = if (isFile) CharStreams.fromFileName(input) else CharStreams.fromString(input)
+    def parse(input: String, isFile: Boolean = false):  MiniJavaParser.ProgramContext = {
+        val charStream = if (isFile) CharStreams.fromFileName(input) else CharStreams.fromString(input)
 
         val miniJavaLexer = new MiniJavaLexer(charStream)
         miniJavaLexer.removeErrorListeners()

@@ -11,6 +11,7 @@ package minijava.lang.parser
 
 import antlr4.{MiniJavaBaseVisitor, MiniJavaParser}
 import minijava.lang.ast.ASTAliases.MethodParam
+import minijava.lang.ast.VariableScope.{ClassVariable, LocalVariable}
 import minijava.lang.ast._
 
 import scala.language.postfixOps
@@ -47,6 +48,8 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
         while (varIter.hasNext) {
             varDecls = visit(varIter.next()).asInstanceOf[VarDecl] :: varDecls
         }
+
+        varDecls.foreach( varDecl => varDecl.varScope = Some(ClassVariable()))
 
         var methodDecls: List[MethodDecl] = List()
         val methodIter = ctx.methodDeclaration().iterator()
@@ -85,6 +88,8 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
         while (varIter.hasNext) {
             varDecls = visit(varIter.next()).asInstanceOf[VarDecl] :: varDecls
         }
+
+        varDecls.foreach( varDecl => varDecl.varScope = Some(LocalVariable()))
 
         var statements: List[Statement] = List()
         val statementIter = ctx.statement().iterator()
@@ -171,7 +176,7 @@ class MiniJavaVisitorImpl extends MiniJavaBaseVisitor[ASTNode] {
     }
 
     override def visitExprNumber(ctx: MiniJavaParser.ExprNumberContext): ASTNode = {
-        val intLit = visit(ctx.IntegerLiteral()).asInstanceOf[IntLiteral]
+        val intLit = IntLiteral(ctx.IntegerLiteral().getText.toInt)
         val expr   = if (ctx.expression2().children != null)
                         Some(visit(ctx.expression2()).asInstanceOf[Expression2]) else None
 

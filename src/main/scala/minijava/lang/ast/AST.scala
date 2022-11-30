@@ -15,9 +15,17 @@ object ASTAliases {
 
 sealed trait ASTNode
 sealed trait Type extends ASTNode
-sealed trait Statement extends ASTNode
+sealed trait Statement extends ASTNode {
+    var value: Option[Int] = None
+}
 sealed trait Expression extends ASTNode
 sealed trait Expression2 extends ASTNode
+
+object VariableScope {
+    abstract class Variable
+    case class LocalVariable() extends Variable
+    case class ClassVariable() extends Variable
+}
 
 abstract class Operator(_expr: Expression,
                         _expr2: Option[Expression2]) extends Expression2 {
@@ -40,7 +48,9 @@ case class ClassDecl(ClassName: Identifier,
                      varDecls: List[VarDecl],
                      methodDecls: List[MethodDecl]) extends ASTNode with Scope
 
-case class VarDecl(varType: Type, varName: Identifier) extends ASTNode
+case class VarDecl(varType: Type, varName: Identifier) extends ASTNode {
+    var varScope: Option[VariableScope.Variable] = None
+}
 
 case class MethodDecl(methodType: Type,
                       methodName: Identifier,

@@ -248,7 +248,23 @@ object TypeChecker {
                                     TypeMismatchError(".length expects a symbol of type " + IntArray())
                                     expression2TypeCheck(symbolTable, expr)
                                 int()
-                            case _: ExprArray => expression2TypeCheck(symbolTable, expr)
+                            case _: ExprArray =>
+                                expression2TypeCheck(symbolTable, expr)
+                            case _: And =>
+                                val exprType = expression2TypeCheck(symbolTable, expr)
+                                if (exprType != boolean())
+                                    TypeMismatchError("boolean operator expects a symbol of type " + boolean())
+                                exprType
+                            case _: LessThan =>
+                                val exprType = expression2TypeCheck(symbolTable, expr)
+                                if (exprType != int())
+                                    TypeMismatchError("int operation expects a symbol of type " + int())
+                                boolean()
+                            case _: Addition | _: Subtraction | _: Multiplication =>
+                                val exprType = expression2TypeCheck(symbolTable, expr)
+                                if (exprType != int())
+                                    TypeMismatchError("int operation expects a symbol of type " + int())
+                                exprType
                             case _ => ???
                         }
                     case None => idType.get

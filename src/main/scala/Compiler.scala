@@ -6,6 +6,7 @@ import minijava.lang.codegen.util.ByteArrayClassLoader
 import java.io.{File, FileOutputStream}
 import minijava.lang.parser.{MiniJavaVisitorImpl, Parser}
 import minijava.lang.error.compile.{CompilerError, FileNotFound}
+import minijava.lang.parser.debug.VariablePrinter
 import minijava.lang.parser.symboltable.SymbolTableBuilder
 import minijava.lang.typechecker.TypeChecker
 import org.objectweb.asm._
@@ -24,7 +25,7 @@ object Compiler {
         }
 
         // Phase 1
-        val parseTree = Parser.parse(filename)
+        val parseTree = Parser.parse(filename, isFile = true)
         val miniJavaVisitor = new MiniJavaVisitorImpl()
         val AST = miniJavaVisitor.visit(parseTree)
         println(AST)
@@ -34,8 +35,10 @@ object Compiler {
         val symbolTable = symbolTableBuilder.symbolTable
         symbolTableBuilder.hasUniqueSymbols(symbolTable)
         TypeChecker.typeCheck(symbolTable, AST)
+        VariablePrinter.debug(AST.asInstanceOf[Program])
 
         // Phase 3
+        CodeGenerationImpl.setSymbolTable(symbolTable)
         val targetDir = new File("minijava-target")
         if (! targetDir.isDirectory) {
             targetDir.mkdir()

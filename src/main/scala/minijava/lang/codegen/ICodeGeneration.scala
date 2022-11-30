@@ -20,13 +20,14 @@ trait ICodeGeneration {
     def visitMainMethodDecl(statement: Statement, cw: ClassWriter): MethodVisitor
     def visitMethodDecl(methodDecl: MethodDecl, cw: ClassWriter): MethodVisitor
     def visitClassDecl(classDecl: ClassDecl): ClassWriter
-    def visitVarDecl(varDecl: VarDecl): Unit
-    def visitStatementBlock(statementBlock: StatementBlock): Unit
-    def visitIfStatement(ifStatement: IfStatement): Unit
-    def visitWhileLoop(whileLoop: WhileLoop): Unit
-    def visitForLoop(forLoop: ForLoop): Unit
+    def visitVarDecl(varDecl: VarDecl, cw: ClassWriter): Unit
+    def visitVarDecl(methodDecl: MethodDecl, methodVisitor: MethodVisitor): Unit
+    def visitStatementBlock(statementBlock: StatementBlock, methodVisitor: MethodVisitor): Unit
+    def visitIfStatement(ifStatement: IfStatement, methodVisitor: MethodVisitor): Unit
+    def visitWhileLoop(whileLoop: WhileLoop, methodVisitor: MethodVisitor): Unit
+    def visitForLoop(forLoop: ForLoop, methodVisitor: MethodVisitor): Unit
     def visitPrintStatement(printStatement: PrintStatement, methodVisitor: MethodVisitor): Unit
-    def visitAssignStatement(assignStatement: AssignStatement): Unit
+    def visitAssignStatement(assignStatement: AssignStatement, methodVisitor: MethodVisitor): Unit
     def visitArrayAssignStatement(arrayAssignStatement: ArrayAssignStatement): Unit
 
 

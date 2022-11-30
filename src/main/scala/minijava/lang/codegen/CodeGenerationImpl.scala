@@ -88,6 +88,7 @@ object CodeGenerationImpl extends ICodeGeneration {
             case n: ArrayAssignStatement => CodeGenerationImpl.visitArrayAssignStatement(n)
             case n: ExprNumber           => CodeGenerationImpl.visitIntegerExpr(n.int, methodVisitor)
             case n: ExprBoolean          => CodeGenerationImpl.visitBooleanExpr(n, methodVisitor)
+            case n: ExprId               => CodeGenerationImpl.visitExprId(n, methodVisitor)
             case n: AssignStatement      =>
         }
     }
@@ -109,6 +110,10 @@ object CodeGenerationImpl extends ICodeGeneration {
 
             case None =>
         }
+    }
+
+    def visitExprId(id: ExprId, visitor: MethodVisitor): Unit = {
+
     }
 
     def visitBooleanExpr(boolean: ExprBoolean, methodVisitor: MethodVisitor): Unit = {
@@ -197,7 +202,7 @@ object CodeGenerationImpl extends ICodeGeneration {
         constructorMethodVisitor.visitEnd()
 
         for (variable <- classDecl.varDecls) {
-            visitVarDecl(variable, cw)
+            cw.visitField(ACC_PUBLIC, variable.varName.id, JvmTypeGen.get(variable.varType), null, null)
         }
 
         for (method <- classDecl.methodDecls) {
@@ -246,8 +251,14 @@ object CodeGenerationImpl extends ICodeGeneration {
         )
 
         methodVisitor.visitCode()
+        val methodStartLabel = new Label()
+        val methodEndLabel = new Label()
 
-        visitVarDecl(methodDecl, methodVisitor)
+        var count = methodDecl.methodParams.length
+        for (methodVar <- methodDecl.varDecls) {
+            methodVisitor.visitLocalVariable(methodVar.varName.id, JvmTypeGen.get(methodVar.varType), null, methodStartLabel, methodEndLabel, count + 1)
+            count = count.+(1)
+        }
 
         for (statement <- methodDecl.statements) {
             methodWalker(statement, methodVisitor)
@@ -307,6 +318,24 @@ object CodeGenerationImpl extends ICodeGeneration {
     }
 
     override def visitForLoop(forLoop: ForLoop, methodVisitor: MethodVisitor): Unit = {
+        val forBegin = new Label()
+        val forEnd   = new Label()
+        // store the variable
+        methodVisitor.visitLocalVariable(forLoop.var1Name.id, JvmTypeGen.get(int()), null, forBegin, forEnd, 1)
+
+        methodWalker(forLoop.var1Assign, methodVisitor)
+        methodVisitor.visitIntInsn( ASTORE, 1)
+        // for loop visit
+        methodVisitor.visitLabel(forBegin)
+        methodWalker(forLoop.conditional, methodVisitor)
+        methodVisitor.visitJumpInsn(IFEQ, forEnd)
+        methodWalker(forLoop.statement, methodVisitor)
+        //update variable
+        methodWalker(forLoop.var2Assign, methodVisitor)
+        methodVisitor.visitIntInsn(ASTORE, 1)
+        methodVisitor.visitJumpInsn(GOTO, forEnd)
+        methodVisitor.visitLabel(forEnd)
+
     }
 
     override def visitPrintStatement(printStatement: PrintStatement, methodVisitor: MethodVisitor): Unit = {
@@ -329,31 +358,11 @@ object CodeGenerationImpl extends ICodeGeneration {
     }
 
     override def visitAssignStatement(assignStatement: AssignStatement, methodVisitor: MethodVisitor): Unit = {
-     ???
+        ???
     }
 
     override def visitArrayAssignStatement(arrayAssignStatement: ArrayAssignStatement): Unit = ???
 
-    override def visitVarDecl(methodDecl: MethodDecl, methodVisitor: MethodVisitor): Unit = {
-        val methodStart = new Label()
-        methodVisitor.visitLabel(methodStart)
-        methodVisitor.visitInsn(ICONST_4)
-        methodVisitor.visitVarInsn(ISTORE, 1)
-
-//        var istore      = methodDecl.methodParams.size + 1
-//        for (varDecl <- methodDecl.varDecls) {
-//
-//            methodVisitor.visitLocalVariable(
-//                varDecl.varName.id,
-//                util.JvmTypeGen.get(varDecl.varType),
-//                null,
-//                methodStart,
-//                methodEnd,
-//                istore
-//            )
-//            istore = istore.+(1)
-//        }
-    }
 
     def getMethodType(className: String, methodName: String): Type = {
         val classNode = symbolTable.getClassNode(className)

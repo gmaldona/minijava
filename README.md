@@ -18,7 +18,3 @@ From the root directory of the project, run the following script to compile the 
 ```shell
 $ ./scripts/compile_grammar.sh
 ```
-
-Phase 1: Parsing ✅ <br>
-Phase 2: Intermediate Representation/AST ✅ <br>
-Phase 3: Code Generation (WIP) <br>
